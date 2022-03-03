@@ -2,17 +2,14 @@ import React, {useEffect, useRef, useState} from "react";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
-import {LAMPORTS_PER_SOL} from "@solana/web3.js";
-import {AnchorWallet, useAnchorWallet} from "@solana/wallet-adapter-react";
+import {PublicKey, LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {AnchorWallet, useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
-import socketIOClient from "socket.io-client";
-import {SolendMarket} from "@solendprotocol/solend-sdk";
+import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
-const ENDPOINT = "http://localhost:4001";
-const socket = socketIOClient(ENDPOINT);
 
 const WalletContainer = styled.div`
   display: flex;
@@ -175,19 +172,21 @@ const Home = (props: HomeProps) => {
         severity: undefined,
     });
 
-    async function solend() {
-        const market = await SolendMarket.initialize(
-            props.connection
-        );
-        console.log(market.reserves);
-
-        await market.loadReserves();
-
-        const usdcReserve = market.reserves.find(res => res.config.symbol === 'USDC');
-        console.log(usdcReserve?.stats?.totalDepositsWads.toString());
-    }
-
     const wallet = useAnchorWallet();
+    const { publicKey, sendTransaction } = useWallet();
+
+    async function solend() {
+        console.log("start");
+        const solendAction = await SolendAction.buildDepositTxns(
+            props.connection,
+            "100000",
+            "USDC",
+            publicKey as PublicKey,
+            "production"
+        );
+        await solendAction.sendTransactions(sendTransaction); // sendTransaction from wallet adapter or custom
+        console.log("end");
+    }
 
     function throwConfetti(): void {
         confetti({
@@ -206,16 +205,10 @@ const Home = (props: HomeProps) => {
         })();
     }, [wallet, props.connection]);
 
-    useEffect(() => {
-        socket.on("FromAPI", (data: React.SetStateAction<string>) => {
-            setResponse(data);
-        });
-    }, []);
 
     const ref: { current: AnchorWallet | undefined } = useRef();
     useEffect(() => {
         if (wallet?.publicKey.toString() != ref?.current?.publicKey.toString()) {
-            socket.emit("walletConnect", wallet?.publicKey);
             ref.current = wallet;
         }
     }, [wallet]);
