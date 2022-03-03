@@ -2,13 +2,14 @@ import React, {useEffect, useRef, useState} from "react";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
-import {LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 import {AnchorWallet, useAnchorWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
-import {Snackbar, Paper, LinearProgress, Chip} from "@material-ui/core";
+import {Snackbar} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
 import socketIOClient from "socket.io-client";
+import {SolendMarket} from "@solendprotocol/solend-sdk";
 const ENDPOINT = "http://localhost:4001";
 const socket = socketIOClient(ENDPOINT);
 
@@ -58,50 +59,6 @@ const ConnectButton = styled(WalletMultiButton)`
   margin: 0 auto;
 `;
 
-const NFT = styled(Paper)`
-  min-width: 400px;
-  padding: 5px 20px 20px 20px;
-  flex: 1 1 auto;
-  background-color: var(--card-background-color) !important;
-  color: var(--main-text-color) !important;
-`;
-const Des = styled(NFT)`
-  text-align: left;
-  padding-top: 0px;
-`;
-
-const Card = styled(Paper)`
-  display: inline-block;
-  background-color: var(--card-background-lighter-color) !important;
-  margin: 5px;
-  padding: 24px;
-`;
-
-const MintButtonContainer = styled.div`
-  button.MuiButton-contained:not(.MuiButton-containedPrimary).Mui-disabled {
-    color: #464646;
-  }
-
-  button.MuiButton-contained:not(.MuiButton-containedPrimary):hover,
-  button.MuiButton-contained:not(.MuiButton-containedPrimary):focus {
-    -webkit-animation: pulse 1s;
-    animation: pulse 1s;
-    box-shadow: 0 0 0 2em rgba(255, 255, 255, 0);
-  }
-
-  @-webkit-keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 #ef8f6e;
-    }
-  }
-
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 #ef8f6e;
-    }
-  }
-`;
-
 const Logo = styled.div`
   flex: 0 0 auto;
 
@@ -142,22 +99,6 @@ const Menu = styled.ul`
   }
 `;
 
-const SolExplorerLink = styled.a`
-  color: var(--title-text-color);
-  border-bottom: 1px solid var(--title-text-color);
-  font-weight: bold;
-  list-style-image: none;
-  list-style-position: outside;
-  list-style-type: none;
-  outline: none;
-  text-decoration: none;
-  text-size-adjust: 100%;
-
-  :hover {
-    border-bottom: 2px solid var(--title-text-color);
-  }
-`;
-
 const MainContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -185,56 +126,11 @@ const DesContainer = styled.div`
   gap: 20px;
 `;
 
-const Price = styled(Chip)`
-  position: absolute;
-  margin: 5px;
-  font-weight: bold;
-  font-size: 1em !important;
-`;
-
 const Image = styled.img`
   height: 400px;
   width: auto;
   border-radius: 7px;
   box-shadow: 5px 5px 40px 5px rgba(0,0,0,0.5);
-`;
-
-const BorderLinearProgress = styled(LinearProgress)`
-  margin: 20px auto;
-  width: 500px;
-  height: 10px !important;
-  border-radius: 30px;
-  border: 2px solid white;
-  box-shadow: 5px 3px 16px -3px rgba(0,0,0,0.5);
-  background-color:white !important;
-  
-  > div.MuiLinearProgress-barColorPrimary{
-    background-color:var(--second-accent) !important;
-  }
-
-  > div.MuiLinearProgress-bar1Determinate {
-    border-radius: 30px !important;
-    background-image: linear-gradient(270deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.5));
-  }
-`;
-
-const ShimmerTitle = styled.h1`
-  margin: 30px auto;
-  color: var(--main-text-color);
-`;
-
-const GoldTitle = styled.h2`
-  color: var(--title-text-color);
-`;
-
-const LogoAligner = styled.div`
-  display: flex;
-  align-items: center;
-
-  img {
-    max-height: 35px;
-    margin-right: 10px;
-  }
 `;
 
 export interface HomeProps {
@@ -251,6 +147,18 @@ const Home = (props: HomeProps) => {
         message: "",
         severity: undefined,
     });
+
+    async function solend() {
+        const market = await SolendMarket.initialize(
+            props.connection
+        );
+        console.log(market.reserves);
+
+        await market.loadReserves();
+
+        const usdcReserve = market.reserves.find(res => res.config.symbol === 'USDC');
+        console.log(usdcReserve?.stats?.totalDepositsWads.toString());
+    }
 
     const wallet = useAnchorWallet();
 
@@ -304,6 +212,7 @@ const Home = (props: HomeProps) => {
                         <p>
                             It's <time dateTime={response}>{response}</time>
                         </p>
+                        <button onClick={solend}>Click me</button>
                     </DesContainer>
                 </MysteryContainer>
             </MainContainer>
