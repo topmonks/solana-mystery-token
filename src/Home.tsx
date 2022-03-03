@@ -173,6 +173,7 @@ const Home = (props: HomeProps) => {
         message: "",
         severity: undefined,
     });
+    const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
 
     const wallet = useAnchorWallet();
     const { publicKey, sendTransaction } = useWallet();
@@ -238,6 +239,11 @@ const Home = (props: HomeProps) => {
                             }
   */
 
+    const changeBoxState = (state: string) => {
+        setBoxState(state);
+        localStorage.setItem("isBox", state);
+    }
+
     const ref: { current: AnchorWallet | undefined } = useRef();
 
     useEffect(() => {
@@ -295,9 +301,8 @@ const Home = (props: HomeProps) => {
                                     <PlayButton
                                         depositTokens={async () => {}}
                                         withdrawTokens={async () => {}}
-                                        isLoading={false}
-                                        isDeposited={false}
-                                        isOpened={false}
+                                        claimTokens={async () => {}}
+                                        boxState={boxState}
                                     />
                                 )
                             }

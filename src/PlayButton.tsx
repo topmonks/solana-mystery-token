@@ -13,39 +13,37 @@ export const CTAButton = styled(Button)`
 export const PlayButton = ({
                                depositTokens,
                                withdrawTokens,
-                               isLoading,
-                               isDeposited,
-                                isOpened
+                               claimTokens,
+                                boxState
                            }: {
     depositTokens: () => Promise<void>;
     withdrawTokens: () => Promise<void>;
-    isLoading: boolean;
-    isDeposited: boolean;
-    isOpened: boolean;
+    claimTokens: () => Promise<void>;
+    boxState: string | null;
 }) => {
 
     return (
         <CTAButton
-            disabled={isLoading}
             onClick={async () => {
-                if (!isDeposited) {
-                    console.log('Requesting gateway token');
+                if (!boxState) {
+                    console.log('Creating...');
                     await depositTokens();
-                } else {
-                    console.log('Minting...');
+                } else if (boxState === "created") {
+                    console.log('Opening...');
                     await withdrawTokens();
+                } else if (boxState === "opened") {
+                    console.log('Claiming...');
+                    await claimTokens();
                 }
             }}
             variant="contained"
         >
-            {isLoading ? (
-                <CircularProgress/>
-            ) : isDeposited ? (
+            {(boxState === "created") ? (
                 'OPEN'
-            ) : isOpened ? (
+            ) : (boxState === "opened") ? (
                 "CLAIM"
             ) : (
-                "DEPOSIT"
+                "CREATE"
             )}
         </CTAButton>
     );
