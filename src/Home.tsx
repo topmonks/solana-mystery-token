@@ -177,8 +177,8 @@ const Home = (props: HomeProps) => {
     const wallet = useAnchorWallet();
     const { publicKey, sendTransaction } = useWallet();
 
-    async function solend() {
-        console.log("start");
+    async function getExistingSolendDeposit(){
+        console.log("start get existing solend deposit");
         const market = await SolendMarket.initialize(
             props.connection
         );
@@ -189,9 +189,25 @@ const Home = (props: HomeProps) => {
             //USDC
             const isDeposited = obligation?.deposits.find( reserve => reserve.mintAddress === treasureSymbol);
             if(isDeposited){
-                console.log(parseFloat(isDeposited.amount.toString())/1000000);
+                //console.log(parseFloat(isDeposited.amount.toString())/1000000);
+                return  isDeposited.amount.toString();
             }
         }
+        console.log("end");
+        return "";
+    }
+
+    async function createBox(){
+        const isDeposited = await getExistingSolendDeposit();
+        if(isDeposited){
+            localStorage.setItem("depositedBeforeCreate", isDeposited);
+            console.log(localStorage.getItem("depositedBeforeCreate"));
+        }
+        localStorage.setItem("isBox", "1");
+    }
+
+    async function solend() {
+        console.log("start");
 
         const solendAction = await SolendAction.buildDepositTxns(
             props.connection,
@@ -235,6 +251,16 @@ const Home = (props: HomeProps) => {
                             const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
                             console.log(tokenAmount);
                             setBalance(tokenAmount.uiAmount);
+                        }
+                        if(localStorage.getItem("isBox") === "created"){
+                            //show starts of actual box
+                            console.log("Our mystery box...");
+                        } else if(localStorage.getItem("isBox") === "opened"){
+                            //show starts of actual box
+                            console.log("Claim from mystery box...");
+                        } else {
+                            //UI to crate new mystery box
+                            console.log("No mystery box, create one!");
                         }
                     })();
                 }
