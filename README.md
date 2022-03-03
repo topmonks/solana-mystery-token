@@ -1,1 +1,0 @@
-# solana-mystery-token
