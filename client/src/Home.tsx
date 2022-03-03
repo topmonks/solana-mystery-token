@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import usePrevious from "./usePrevious";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
