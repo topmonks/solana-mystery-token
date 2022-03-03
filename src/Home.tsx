@@ -2,13 +2,13 @@ import React, {useEffect, useRef, useState} from "react";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
-import {PublicKey, LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {PublicKey} from "@solana/web3.js";
 import {AnchorWallet, useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
-import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
+import {SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
 
 const treasureSymbol = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -222,28 +222,25 @@ const Home = (props: HomeProps) => {
                             }
   */
 
-    useEffect(() => {
-        (async () => {
-            if (wallet) {
-                const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasureSymbol) });
-                console.log("USDC account");
-                console.log(tokenAccounts);
-                if(tokenAccounts?.value.length > 0) {
-                    const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
-                    console.log(tokenAmount);
-                    setBalance(tokenAmount.uiAmount);
-                }
-            }
-        })();
-    }, [wallet, props.connection]);
-
-
     const ref: { current: AnchorWallet | undefined } = useRef();
+
     useEffect(() => {
-        if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
-            ref.current = wallet;
-        }
-    }, [wallet]);
+            if (wallet?.publicKey.toString() != ref?.current?.publicKey.toString()) {
+                if (wallet) {
+                    (async () => {
+                        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasureSymbol) });
+                        console.log("USDC account");
+                        console.log(tokenAccounts);
+                        if(tokenAccounts?.value.length > 0) {
+                            const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
+                            console.log(tokenAmount);
+                            setBalance(tokenAmount.uiAmount);
+                        }
+                    })();
+                }
+                ref.current = wallet;
+            }
+    }, [wallet, props.connection]);
 
     return (
         <main>
