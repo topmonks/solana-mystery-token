@@ -8,7 +8,7 @@ import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
-import {SolendMarket} from "@solendprotocol/solend-sdk";
+import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
 
 const treasureSymbol = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -193,15 +193,15 @@ const Home = (props: HomeProps) => {
             }
         }
 
-        /*const solendAction = await SolendAction.buildDepositTxns(
+        const solendAction = await SolendAction.buildDepositTxns(
             props.connection,
-            "100000",
+            "1000000",
             "USDC",
             publicKey as PublicKey,
             "production"
         );
-        await solendAction.sendTransactions(sendTransaction);*/
-
+        const resultsDeposit = await solendAction.sendTransactions(sendTransaction);
+        console.log(resultsDeposit);
         console.log("end");
     }
 
