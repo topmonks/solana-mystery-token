@@ -225,7 +225,7 @@ const Home = (props: HomeProps) => {
     const ref: { current: AnchorWallet | undefined } = useRef();
 
     useEffect(() => {
-            if (wallet?.publicKey.toString() != ref?.current?.publicKey.toString()) {
+            if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
                 if (wallet) {
                     (async () => {
                         const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasureSymbol) });
@@ -271,6 +271,7 @@ const Home = (props: HomeProps) => {
                                         withdrawTokens={async () => {}}
                                         isLoading={false}
                                         isDeposited={false}
+                                        isOpened={false}
                                     />
                                 )
                             }

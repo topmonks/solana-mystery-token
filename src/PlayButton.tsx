@@ -14,12 +14,14 @@ export const PlayButton = ({
                                depositTokens,
                                withdrawTokens,
                                isLoading,
-                               isDeposited
+                               isDeposited,
+                                isOpened
                            }: {
     depositTokens: () => Promise<void>;
     withdrawTokens: () => Promise<void>;
     isLoading: boolean;
     isDeposited: boolean;
+    isOpened: boolean;
 }) => {
 
     return (
@@ -39,7 +41,9 @@ export const PlayButton = ({
             {isLoading ? (
                 <CircularProgress/>
             ) : isDeposited ? (
-                'WITHDRAW'
+                'OPEN'
+            ) : isOpened ? (
+                "CLAIM"
             ) : (
                 "DEPOSIT"
             )}
