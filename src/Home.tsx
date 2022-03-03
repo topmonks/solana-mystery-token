@@ -200,6 +200,9 @@ const Home = (props: HomeProps) => {
         (async () => {
             if (wallet) {
                 const balance = await props.connection.getBalance(wallet.publicKey);
+                const tokenAccounts = await props.connection.getTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") });
+                console.log("USDC account");
+                console.log(tokenAccounts);
                 setBalance(balance / LAMPORTS_PER_SOL);
             }
         })();

@@ -89,7 +89,6 @@ const App = () => {
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} autoConnect={true}>
             <WalletModalProvider>
-
               <Home
                   connection={connection}
                   txTimeout={txTimeout}
