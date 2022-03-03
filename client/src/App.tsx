@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 import { createTheme, ThemeProvider } from "@material-ui/core";
 import { useMemo } from "react";

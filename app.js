@@ -33,8 +33,9 @@ io.on("connection", (socket) => {
     });
 
     socket.on('walletConnect', (data) => {
+        console.log(data);
         if(data){
-            console.log(new Date().toISOString()+' Success: ' + data);
+            console.log(new Date().toISOString()+' Success:' + data);
         } else {
             console.log(new Date().toISOString()+' Error: no pubKey');
         }

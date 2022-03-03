@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import usePrevious from "./usePrevious";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
 import {LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
-import {useAnchorWallet} from "@solana/wallet-adapter-react";
+import {AnchorWallet, useAnchorWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar, Paper, LinearProgress, Chip} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
@@ -247,7 +247,6 @@ export interface HomeProps {
 const Home = (props: HomeProps) => {
     const [balance, setBalance] = useState<number>();
     const [response, setResponse] = useState("");
-
     const [alertState, setAlertState] = useState<AlertState>({
         open: false,
         message: "",
@@ -279,11 +278,11 @@ const Home = (props: HomeProps) => {
         });
     }, []);
 
-    const prevWalletRef = usePrevious(wallet);
+    const ref: { current: AnchorWallet | undefined } = useRef();
     useEffect(() => {
-        if (wallet && wallet != prevWalletRef) {
-            console.log(wallet);
-            socket.emit("walletConnect", wallet.publicKey);
+        if (wallet?.publicKey.toString() != ref?.current?.publicKey.toString()) {
+            socket.emit("walletConnect", wallet?.publicKey);
+            ref.current = wallet;
         }
     }, [wallet]);
 
