@@ -10,6 +10,7 @@ import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
 import socketIOClient from "socket.io-client";
 import {SolendMarket} from "@solendprotocol/solend-sdk";
+import {PlayButton} from "./PlayButton";
 const ENDPOINT = "http://localhost:4001";
 const socket = socketIOClient(ENDPOINT);
 
@@ -133,6 +134,32 @@ const Image = styled.img`
   box-shadow: 5px 5px 40px 5px rgba(0,0,0,0.5);
 `;
 
+
+const PlayButtonContainer = styled.div`
+  button.MuiButton-contained:not(.MuiButton-containedPrimary).Mui-disabled {
+    color: #464646;
+  }
+
+  button.MuiButton-contained:not(.MuiButton-containedPrimary):hover,
+  button.MuiButton-contained:not(.MuiButton-containedPrimary):focus {
+    -webkit-animation: pulse 1s;
+    animation: pulse 1s;
+    box-shadow: 0 0 0 2em rgba(255, 255, 255, 0);
+  }
+
+  @-webkit-keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 #ef8f6e;
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 #ef8f6e;
+    }
+  }
+`;
+
 export interface HomeProps {
     connection: anchor.web3.Connection;
     txTimeout: number;
@@ -213,6 +240,19 @@ const Home = (props: HomeProps) => {
                             It's <time dateTime={response}>{response}</time>
                         </p>
                         <button onClick={solend}>Click me</button>
+                        <PlayButtonContainer>
+                            {!wallet ? (
+                                <ConnectButton>Connect Wallet</ConnectButton>
+                            ) : (
+                                    <PlayButton
+                                        depositTokens={async () => {}}
+                                        withdrawTokens={async () => {}}
+                                        isLoading={false}
+                                        isDeposited={false}
+                                    />
+                                )
+                            }
+                        </PlayButtonContainer>
                     </DesContainer>
                 </MysteryContainer>
             </MainContainer>
