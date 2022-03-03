@@ -11,6 +11,8 @@ import {AlertState} from './utils';
 import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
 
+const treasureSymbol = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+
 const WalletContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -177,14 +179,28 @@ const Home = (props: HomeProps) => {
 
     async function solend() {
         console.log("start");
-        const solendAction = await SolendAction.buildDepositTxns(
+        const market = await SolendMarket.initialize(
+            props.connection
+        );
+        await market.loadReserves();
+
+        if (publicKey) {
+            const obligation = await market.fetchObligationByWallet(publicKey);
+            //USDC
+            const isDeposited = obligation?.deposits.find( reserve => reserve.mintAddress == treasureSymbol);
+            if(isDeposited){
+                console.log(parseFloat(isDeposited.amount.toString())/1000000);
+            }
+        }
+
+        /*const solendAction = await SolendAction.buildDepositTxns(
             props.connection,
             "100000",
             "USDC",
             publicKey as PublicKey,
             "production"
         );
-        await solendAction.sendTransactions(sendTransaction); // sendTransaction from wallet adapter or custom
+        await solendAction.sendTransactions(sendTransaction);*/
         console.log("end");
     }
 
@@ -196,14 +212,62 @@ const Home = (props: HomeProps) => {
         });
     }
 
+    /*
+    {
+    "context": {
+        "slot": 123318431
+    },
+    "value": [
+        {
+            "account": {
+                "data": {
+                    "parsed": {
+                        "info": {
+                            "delegate": "FeU3Vjg7YE2ZK2fL3GoyNMCrfjfrTLqV9aRijg1BCZ6H",
+                            "delegatedAmount": {
+                                "amount": "7709",
+                                "decimals": 6,
+                                "uiAmount": 0.007709,
+                                "uiAmountString": "0.007709"
+                            },
+                            "isNative": false,
+                            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                            "owner": "G1Cgvdr7hYAmKhoHPR7FxFMwhN37BGXYpXKC9jLP3mUd",
+                            "state": "initialized",
+                            "tokenAmount": {
+                                "amount": "8503319",
+                                "decimals": 6,
+                                "uiAmount": 8.503319,
+                                "uiAmountString": "8.503319"
+                            }
+                        },
+                        "type": "account"
+                    },
+                    "program": "spl-token",
+                    "space": 165
+                },
+                "executable": false,
+                "lamports": 2039280,
+                "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "rentEpoch": 284
+            },
+            "pubkey": "DaC98ErzwqQNd4oyop4fuVLrvB1scQ4NwnGA8NGyeoHW"
+        }
+    ]
+}
+     */
+
     useEffect(() => {
         (async () => {
             if (wallet) {
-                const balance = await props.connection.getBalance(wallet.publicKey);
-                const tokenAccounts = await props.connection.getTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") });
+                const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasureSymbol) });
                 console.log("USDC account");
                 console.log(tokenAccounts);
-                setBalance(balance / LAMPORTS_PER_SOL);
+                if(tokenAccounts?.value.length > 0) {
+                    const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
+                    console.log(tokenAmount);
+                    setBalance(tokenAmount.uiAmount);
+                }
             }
         })();
     }, [wallet, props.connection]);
@@ -225,7 +289,7 @@ const Home = (props: HomeProps) => {
                     <Menu />
                     <Wallet>
                         {wallet ?
-                            <WalletAmount>{(balance || 0).toLocaleString()} SOL<ConnectButton/></WalletAmount> :
+                            <WalletAmount>{(balance || 0).toLocaleString()} USDC<ConnectButton/></WalletAmount> :
                             <ConnectButton>Connect Wallet</ConnectButton>}
                     </Wallet>
                 </WalletContainer>
