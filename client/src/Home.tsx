@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import usePrevious from "./usePrevious";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
@@ -7,7 +8,7 @@ import {useAnchorWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar, Paper, LinearProgress, Chip} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
-import {AlertState} from './utils.ts';
+import {AlertState} from './utils';
 import socketIOClient from "socket.io-client";
 const ENDPOINT = "http://localhost:4001";
 const socket = socketIOClient(ENDPOINT);
@@ -268,8 +269,6 @@ const Home = (props: HomeProps) => {
             if (wallet) {
                 const balance = await props.connection.getBalance(wallet.publicKey);
                 setBalance(balance / LAMPORTS_PER_SOL);
-
-                socket.emit("walletConnect", wallet.publicKey);
             }
         })();
     }, [wallet, props.connection]);
@@ -280,6 +279,13 @@ const Home = (props: HomeProps) => {
         });
     }, []);
 
+    const prevWalletRef = usePrevious(wallet);
+    useEffect(() => {
+        if (wallet && wallet != prevWalletRef) {
+            console.log(wallet);
+            socket.emit("walletConnect", wallet.publicKey);
+        }
+    }, [wallet]);
 
     return (
         <main>
