@@ -11,7 +11,11 @@ import {AlertState} from './utils';
 import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
 
-const treasureSymbol = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const treasure = {account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6, code: "USDC"}
+
+let setPrecision = function(value: number, digits: number){
+    return Math.round(value*Math.pow(10, digits))/Math.pow(10, digits);
+};
 
 const WalletContainer = styled.div`
   display: flex;
@@ -186,7 +190,7 @@ const Home = (props: HomeProps) => {
 
     function getExistingSolendTreasureDeposit(){
         const value = localStorage.getItem("depositedBeforeCreate");
-        return value ? parseFloat(value)/1000000 : 0;
+        return value ? setPrecision(parseFloat(value)/1000000, treasure.decimals) : 0;
     }
 
     function setMysteryLockedValue(value: number){
@@ -196,7 +200,7 @@ const Home = (props: HomeProps) => {
 
     function getMysteryLockedValue(){
         const value = localStorage.getItem("mysteryLockedValue");
-        return value ? parseFloat(value)/1000000 : 0;
+        return value ? setPrecision(parseFloat(value)/1000000, treasure.decimals) : 0;
     }
 
     async function getSolendTreasureDeposit(){
@@ -208,9 +212,9 @@ const Home = (props: HomeProps) => {
         if (publicKey) {
             const obligation = await market.fetchObligationByWallet(publicKey);
             //USDC
-            const isDeposited = obligation?.deposits.find( reserve => reserve.mintAddress === treasureSymbol);
+            const isDeposited = obligation?.deposits.find( reserve => reserve.mintAddress === treasure.account);
             if(isDeposited){
-                return  parseFloat(isDeposited.amount.toString())/1000000;
+                return  setPrecision(parseFloat(isDeposited.amount.toString())/1000000, treasure.decimals);
             }
         }
         console.log("end");
@@ -223,13 +227,30 @@ const Home = (props: HomeProps) => {
         const solendAction = await SolendAction.buildDepositTxns(
             props.connection,
             (amount*1000000).toString(),
-            "USDC",
+            treasure.code,
             publicKey as PublicKey,
             "production"
         );
         console.log("end");
         setMysteryLockedValue(amount);
         return await solendAction.sendTransactions(sendTransaction);
+    }
+
+    async function withdrawFromSolend(amount: number) {
+        console.log("start solend withdraw");
+        console.log(setPrecision(amount*1000000, 0).toString());
+
+        const solendAction = await SolendAction.buildWithdrawTxns(
+            props.connection,
+            setPrecision(amount*1000000, 0).toString(),
+            treasure.code,
+            publicKey as PublicKey,
+            "production"
+        );
+        const result = await solendAction.sendTransactions(sendTransaction);
+        console.log(result);
+        console.log("end");
+        return result;
     }
 
     async function createMystery(){
@@ -242,6 +263,7 @@ const Home = (props: HomeProps) => {
         }
     }
 
+
     async function getMysteryProfit(){
         const existingTreasureDeposit = getExistingSolendTreasureDeposit();
         console.log("existingTreasureDeposit: " + existingTreasureDeposit);
@@ -249,13 +271,17 @@ const Home = (props: HomeProps) => {
         console.log("actualTreasureDeposit: " + actualTreasureDeposit);
         const mysteryLockedValue = getMysteryLockedValue();
         console.log("mysteryLockedValue: " + mysteryLockedValue);
-        const mysteryProfit = (actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue);
+        const mysteryProfit = setPrecision((actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue), treasure.decimals);
         console.log("mysteryProfit: " + mysteryProfit);
         setMysteryValue(mysteryProfit);
+        return {mysteryProfit, mysteryLockedValue};
     }
 
     async function openMystery(){
-        await getMysteryProfit();
+        const data = await getMysteryProfit();
+        const valueToWithdraw = (data.mysteryProfit + data.mysteryLockedValue);
+        await withdrawFromSolend(valueToWithdraw);
+        changeBoxState("opened");
     }
 
     function throwConfetti(): void {
@@ -277,7 +303,7 @@ const Home = (props: HomeProps) => {
     }
 
     async function getWalletTreasureBalance(wallet: any){
-        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasureSymbol) });
+        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasure.account) });
         console.log("USDC account");
         console.log(tokenAccounts);
         if(tokenAccounts?.value.length > 0) {
