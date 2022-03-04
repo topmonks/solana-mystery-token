@@ -10,6 +10,7 @@ import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
 import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
+import Button from "@material-ui/core/Button";
 
 const treasure = {account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6, code: "USDC"}
 
@@ -135,6 +136,15 @@ const Image = styled.img`
   width: auto;
   border-radius: 7px;
   box-shadow: 5px 5px 40px 5px rgba(0,0,0,0.5);
+`;
+
+export const RefuseTokenLink = styled.a`
+  display: block !important;
+  margin: 20px auto !important;
+  color: var(--disabled) !important;
+  font-size: 1em !important;
+  text-decoration: underline;
+  cursor: pointer!important;
 `;
 
 
@@ -313,6 +323,10 @@ const Home = (props: HomeProps) => {
         }
     }
 
+    function refuseMysteryToken() {
+        //
+    }
+
     const ref: { current: AnchorWallet | undefined } = useRef();
 
     useEffect(() => {
@@ -361,6 +375,7 @@ const Home = (props: HomeProps) => {
                             {!wallet ? (
                                 <ConnectButton>Connect Wallet</ConnectButton>
                             ) : (
+                                <div>
                                     <PlayButton
                                         createMystery={async () => {
                                             console.log('Creating...');
@@ -377,6 +392,8 @@ const Home = (props: HomeProps) => {
                                         }}
                                         boxState={boxState}
                                     />
+                                    { boxState === "opened" && <RefuseTokenLink onClick={refuseMysteryToken}>Refuse mystery token</RefuseTokenLink> }
+                                </div>
                                 )
                             }
                         </PlayButtonContainer>

@@ -9,6 +9,7 @@
   --title-text-color:#001f3f;
   --second-accent:#7462e0;
   --first-accent:#f0be59;
+  --disabled: grey;
 }
 
 body{
