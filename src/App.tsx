@@ -26,6 +26,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import "./App.css";
 import Home from "./Home";
 import { dark } from "@mui/material/styles/createPalette";
+import { amber, deepOrange, grey } from "@mui/material/colors";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -35,27 +36,31 @@ const connection = new anchor.web3.Connection(rpcHost);
 
 const txTimeout = 30000; // milliseconds (confirm this works for your project)
 
-// const theme = createTheme({
-//   overrides: {
-//     MuiButtonBase: {
-//       root: {
-//         justifyContent: 'flex-start',
-//       },
-//     },
-//     MuiButton: {
-//       root: {
-//         textTransform: undefined,
-//         padding: '12px 16px',
-//       },
-//       startIcon: {
-//         marginRight: 8,
-//       },
-//       endIcon: {
-//         marginLeft: 8,
-//       },
-//     },
-//   },
-// });
+const getDesignTokens = () => {
+  return createTheme({
+    palette: {
+      mode: "dark",
+      primary: {
+        ...amber,
+        ...{
+          main: amber[300],
+        },
+      },
+      ...{
+        background: {
+          default: deepOrange[900],
+          paper: deepOrange[900],
+        },
+      },
+      text: {
+        ...{
+          primary: "#fe9110",
+          secondary: grey[500],
+        },
+      },
+    },
+  });
+};
 
 const App = () => {
   // Custom RPC endpoint.
@@ -79,19 +84,23 @@ const App = () => {
     []
   );
 
+  const darkModeTheme = createTheme(getDesignTokens());
+
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect={true}>
-        <WalletModalProvider>
-          <Home
-            connection={connection}
-            txTimeout={txTimeout}
-            rpcHost={rpcHost}
-            network={network}
-          />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <ThemeProvider theme={darkModeTheme}>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect={true}>
+          <WalletModalProvider>
+            <Home
+              connection={connection}
+              txTimeout={txTimeout}
+              rpcHost={rpcHost}
+              network={network}
+            />
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </ThemeProvider>
   );
 };
 

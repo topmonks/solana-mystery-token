@@ -10,6 +10,7 @@
   --second-accent: #7462e0;
   --first-accent: #f0be59;
   --disabled: grey;
+  --glow: rgba(255, 195, 26, 0.4);
 }
 
 body {

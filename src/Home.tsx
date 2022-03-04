@@ -16,6 +16,7 @@ import { SolendAction, SolendMarket } from "@solendprotocol/solend-sdk";
 import { Jupiter, RouteInfo, TOKEN_LIST_URL } from "@jup-ag/core";
 import { PlayButton } from "./PlayButton";
 import { TextField } from "@mui/material";
+import MysteryBox from "./MysteryBox";
 
 const treasure = {
   address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
@@ -453,17 +454,22 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            <p>{mysteryValue} USDC</p>
-            <TextField
-              style={{ width: "300px", margin: "auto" }}
-              id="outlined-basic"
-              label="Amount"
-              variant="outlined"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-              }}
-            />
+            <MysteryBox boxState={boxState} />
+            {boxState === "created" && (
+              <p style={{ color: "#fe9110" }}>
+                {mysteryValue} USDC are doing magic
+              </p>
+            )}
+            {boxState === null && (
+              <TextField
+                style={{ width: "300px", margin: "auto" }}
+                id="outlined-basic"
+                label="Amount"
+                variant="outlined"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            )}
             <PlayButtonContainer>
               {!wallet ? (
                 <ConnectButton>Connect Wallet</ConnectButton>
@@ -472,19 +478,22 @@ const Home = (props: HomeProps) => {
                   <PlayButton
                     createMystery={async () => {
                       console.log("Creating...");
-                      await createMystery();
+                      // await createMystery();
+                      changeBoxState("created");
                     }}
                     openMystery={async () => {
                       console.log("Opening...");
-                      await openMystery();
+                      // await openMystery();
                       //changeBoxState("opened");
+                      changeBoxState("opened");
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
-                      const claimResult = await claimMysteryReward();
-                      if (claimResult) {
-                        resetBox();
-                      }
+                      // const claimResult = await claimMysteryReward();
+                      // if (claimResult) {
+                      //   resetBox();
+                      // }
+                      resetBox();
                     }}
                     boxState={boxState}
                   />
