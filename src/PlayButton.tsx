@@ -11,14 +11,14 @@ export const CTAButton = styled(Button)`
 `;
 
 export const PlayButton = ({
-                               depositTokens,
-                               withdrawTokens,
-                               claimTokens,
+                               createMystery,
+                               openMystery,
+                               claimMystery,
                                 boxState
                            }: {
-    depositTokens: () => Promise<void>;
-    withdrawTokens: () => Promise<void>;
-    claimTokens: () => Promise<void>;
+    createMystery: () => Promise<void>;
+    openMystery: () => Promise<void>;
+    claimMystery: () => Promise<void>;
     boxState: string | null;
 }) => {
 
@@ -26,14 +26,11 @@ export const PlayButton = ({
         <CTAButton
             onClick={async () => {
                 if (!boxState) {
-                    console.log('Creating...');
-                    await depositTokens();
+                    await createMystery();
                 } else if (boxState === "created") {
-                    console.log('Opening...');
-                    await withdrawTokens();
+                    await openMystery();
                 } else if (boxState === "opened") {
-                    console.log('Claiming...');
-                    await claimTokens();
+                    await claimMystery();
                 }
             }}
             variant="contained"
