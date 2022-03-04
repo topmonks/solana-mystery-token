@@ -32,7 +32,6 @@ import {dark} from "@mui/material/styles/createPalette";
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 const network = process.env.REACT_APP_SOLANA_NETWORK as WalletAdapterNetwork;
-
 const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST!;
 const connection = new anchor.web3.Connection(rpcHost);
 
@@ -90,6 +89,7 @@ const App = () => {
                   connection={connection}
                   txTimeout={txTimeout}
                   rpcHost={rpcHost}
+                  network={network}
               />
             </WalletModalProvider>
           </WalletProvider>
