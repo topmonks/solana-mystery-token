@@ -2,20 +2,21 @@ import React, {useEffect, useRef, useState} from "react";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
-import {PublicKey} from "@solana/web3.js";
+import {PublicKey, Keypair} from "@solana/web3.js";
 import {AnchorWallet, useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {Snackbar} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import {AlertState} from './utils';
 import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
+import {Jupiter, RouteInfo, TOKEN_LIST_URL} from "@jup-ag/core";
 import {PlayButton} from "./PlayButton";
 import Button from "@material-ui/core/Button";
 
 const treasure = {account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6, code: "USDC"}
 
-let setPrecision = function(value: number, digits: number){
-    return Math.round(value*Math.pow(10, digits))/Math.pow(10, digits);
+let setPrecision = function (value: number, digits: number) {
+    return Math.round(value * Math.pow(10, digits)) / Math.pow(10, digits);
 };
 
 const WalletContainer = styled.div`
@@ -135,7 +136,7 @@ const Image = styled.img`
   height: 400px;
   width: auto;
   border-radius: 7px;
-  box-shadow: 5px 5px 40px 5px rgba(0,0,0,0.5);
+  box-shadow: 5px 5px 40px 5px rgba(0, 0, 0, 0.5);
 `;
 
 export const RefuseTokenLink = styled.a`
@@ -144,7 +145,7 @@ export const RefuseTokenLink = styled.a`
   color: var(--disabled) !important;
   font-size: 1em !important;
   text-decoration: underline;
-  cursor: pointer!important;
+  cursor: pointer !important;
 `;
 
 
@@ -177,6 +178,7 @@ export interface HomeProps {
     connection: anchor.web3.Connection;
     txTimeout: number;
     rpcHost: string;
+    network: string;
 }
 
 const Home = (props: HomeProps) => {
@@ -191,29 +193,29 @@ const Home = (props: HomeProps) => {
     const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
 
     const wallet = useAnchorWallet();
-    const { publicKey, sendTransaction } = useWallet();
+    const {publicKey, sendTransaction} = useWallet();
 
-    function setExistingSolendTreasureDeposit(amount: number){
-        localStorage.setItem("depositedBeforeCreate", (amount*100000).toString());
+    function setExistingSolendTreasureDeposit(amount: number) {
+        localStorage.setItem("depositedBeforeCreate", (amount * 100000).toString());
         console.log(localStorage.getItem("depositedBeforeCreate"));
     }
 
-    function getExistingSolendTreasureDeposit(){
+    function getExistingSolendTreasureDeposit() {
         const value = localStorage.getItem("depositedBeforeCreate");
-        return value ? setPrecision(parseFloat(value)/1000000, treasure.decimals) : 0;
+        return value ? setPrecision(parseFloat(value) / 1000000, treasure.decimals) : 0;
     }
 
-    function setMysteryLockedValue(value: number){
-        localStorage.setItem("mysteryLockedValue", (value*100000).toString());
+    function setMysteryLockedValue(value: number) {
+        localStorage.setItem("mysteryLockedValue", (value * 100000).toString());
         console.log(localStorage.getItem("mysteryLockedValue"));
     }
 
-    function getMysteryLockedValue(){
+    function getMysteryLockedValue() {
         const value = localStorage.getItem("mysteryLockedValue");
-        return value ? setPrecision(parseFloat(value)/1000000, treasure.decimals) : 0;
+        return value ? setPrecision(parseFloat(value) / 1000000, treasure.decimals) : 0;
     }
 
-    async function getSolendTreasureDeposit(){
+    async function getSolendTreasureDeposit() {
         console.log("start get existing solend deposit");
         const market = await SolendMarket.initialize(
             props.connection
@@ -222,9 +224,9 @@ const Home = (props: HomeProps) => {
         if (publicKey) {
             const obligation = await market.fetchObligationByWallet(publicKey);
             //USDC
-            const isDeposited = obligation?.deposits.find( reserve => reserve.mintAddress === treasure.account);
-            if(isDeposited){
-                return  setPrecision(parseFloat(isDeposited.amount.toString())/1000000, treasure.decimals);
+            const isDeposited = obligation?.deposits.find(reserve => reserve.mintAddress === treasure.account);
+            if (isDeposited) {
+                return setPrecision(parseFloat(isDeposited.amount.toString()) / 1000000, treasure.decimals);
             }
         }
         console.log("end");
@@ -236,7 +238,7 @@ const Home = (props: HomeProps) => {
 
         const solendAction = await SolendAction.buildDepositTxns(
             props.connection,
-            (amount*1000000).toString(),
+            (amount * 1000000).toString(),
             treasure.code,
             publicKey as PublicKey,
             "production"
@@ -248,11 +250,11 @@ const Home = (props: HomeProps) => {
 
     async function withdrawFromSolend(amount: number) {
         console.log("start solend withdraw");
-        console.log(setPrecision(amount*1000000, 0).toString());
+        console.log(setPrecision(amount * 1000000, 0).toString());
 
         const solendAction = await SolendAction.buildWithdrawTxns(
             props.connection,
-            setPrecision(amount*1000000, 0).toString(),
+            setPrecision(amount * 1000000, 0).toString(),
             treasure.code,
             publicKey as PublicKey,
             "production"
@@ -263,18 +265,26 @@ const Home = (props: HomeProps) => {
         return result;
     }
 
-    async function createMystery(){
+/*    async function claimMysteryReward(){
+        const jupiter = await Jupiter.load({
+            connection: props.connection,
+            cluster: "mainnet-beta",
+            publicKey
+        });
+    }*/
+
+    async function createMystery() {
         const existingDeposit = await getSolendTreasureDeposit();
         setExistingSolendTreasureDeposit(existingDeposit);
         const txnDeposit = await depositToSolend(1);
-        if(txnDeposit){
+        if (txnDeposit) {
             console.log(txnDeposit);
             changeBoxState("created");
         }
     }
 
 
-    async function getMysteryProfit(){
+    async function getMysteryProfit() {
         const existingTreasureDeposit = getExistingSolendTreasureDeposit();
         console.log("existingTreasureDeposit: " + existingTreasureDeposit);
         const actualTreasureDeposit = await getSolendTreasureDeposit();
@@ -287,7 +297,7 @@ const Home = (props: HomeProps) => {
         return {mysteryProfit, mysteryLockedValue};
     }
 
-    async function openMystery(){
+    async function openMystery() {
         const data = await getMysteryProfit();
         const valueToWithdraw = (data.mysteryProfit + data.mysteryLockedValue);
         await withdrawFromSolend(valueToWithdraw);
@@ -303,7 +313,7 @@ const Home = (props: HomeProps) => {
     }
 
     const changeBoxState = (state: string) => {
-        if(state.length === 0){
+        if (state.length === 0) {
             localStorage.removeItem("isBox");
             setBoxState(null);
         } else {
@@ -312,11 +322,11 @@ const Home = (props: HomeProps) => {
         }
     }
 
-    async function getWalletTreasureBalance(wallet: any){
-        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: new PublicKey(treasure.account) });
+    async function getWalletTreasureBalance(wallet: any) {
+        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, {mint: new PublicKey(treasure.account)});
         console.log("USDC account");
         console.log(tokenAccounts);
-        if(tokenAccounts?.value.length > 0) {
+        if (tokenAccounts?.value.length > 0) {
             const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
             console.log(tokenAmount);
             return tokenAmount.uiAmount;
@@ -330,26 +340,26 @@ const Home = (props: HomeProps) => {
     const ref: { current: AnchorWallet | undefined } = useRef();
 
     useEffect(() => {
-            if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
-                if (wallet) {
-                    (async () => {
-                        const uiAmount = await getWalletTreasureBalance(wallet);
-                        setBalance(uiAmount);
-                        if(localStorage.getItem("isBox") === "created"){
-                            //show starts of actual box
-                            console.log("Our mystery box...");
-                            await getMysteryProfit();
-                        } else if(localStorage.getItem("isBox") === "opened"){
-                            //show starts of actual box
-                            console.log("Claim from mystery box...");
-                        } else {
-                            //UI to crate new mystery box
-                            console.log("No mystery box, create one!");
-                        }
-                    })();
-                }
-                ref.current = wallet;
+        if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
+            if (wallet) {
+                (async () => {
+                    const uiAmount = await getWalletTreasureBalance(wallet);
+                    setBalance(uiAmount);
+                    if (localStorage.getItem("isBox") === "created") {
+                        //show starts of actual box
+                        console.log("Our mystery box...");
+                        await getMysteryProfit();
+                    } else if (localStorage.getItem("isBox") === "opened") {
+                        //show starts of actual box
+                        console.log("Claim from mystery box...");
+                    } else {
+                        //UI to crate new mystery box
+                        console.log("No mystery box, create one!");
+                    }
+                })();
             }
+            ref.current = wallet;
+        }
     }, [wallet, props.connection]);
 
     return (
@@ -358,7 +368,7 @@ const Home = (props: HomeProps) => {
                 <WalletContainer>
                     <Logo><a href="http://localhost:3000/" target="_blank" rel="noopener noreferrer"><img alt=""
                                                                                                           src="logo.png"/></a></Logo>
-                    <Menu />
+                    <Menu/>
                     <Wallet>
                         {wallet ?
                             <WalletAmount>{(balance || 0).toLocaleString()} USDC<ConnectButton/></WalletAmount> :
@@ -369,7 +379,7 @@ const Home = (props: HomeProps) => {
                 <MysteryContainer>
                     <DesContainer>
                         <p>
-                           {mysteryValue} USDC
+                            {mysteryValue} USDC
                         </p>
                         <PlayButtonContainer>
                             {!wallet ? (
@@ -392,9 +402,11 @@ const Home = (props: HomeProps) => {
                                         }}
                                         boxState={boxState}
                                     />
-                                    { boxState === "opened" && <RefuseTokenLink onClick={refuseMysteryToken}>Refuse mystery token</RefuseTokenLink> }
+                                    {boxState === "opened" &&
+                                    <RefuseTokenLink onClick={refuseMysteryToken}>Refuse mystery
+                                        token</RefuseTokenLink>}
                                 </div>
-                                )
+                            )
                             }
                         </PlayButtonContainer>
                     </DesContainer>
