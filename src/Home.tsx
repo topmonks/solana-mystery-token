@@ -256,6 +256,7 @@ const Home = (props: HomeProps) => {
         (reserve) => reserve.mintAddress === treasure.address
       );
       if (isDeposited) {
+        console.log(isDeposited.amount.toString());
         return setPrecision(
           parseFloat(isDeposited.amount.toString()) / 1000000,
           treasure.decimals
@@ -293,8 +294,10 @@ const Home = (props: HomeProps) => {
       "production"
     );
     const result = await solendAction.sendTransactions(sendTransaction);
-    console.log(result);
-    console.log("end");
+    if (result) {
+      console.log(result);
+      console.log("end");
+    }
     return result;
   }
 
@@ -338,20 +341,24 @@ const Home = (props: HomeProps) => {
   }
 
   async function calculateMysteryProfit() {
-    const existingTreasureDeposit = getExistingSolendTreasureDeposit();
-    console.log("existingTreasureDeposit: " + existingTreasureDeposit);
-    const actualTreasureDeposit = await getSolendTreasureDeposit();
-    console.log("actualTreasureDeposit: " + actualTreasureDeposit);
     const mysteryLockedValue = getMysteryLockedValue();
     console.log("mysteryLockedValue: " + mysteryLockedValue);
-    const mysteryProfit = setPrecision(
-      actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue,
-      treasure.decimals
-    );
-    console.log("mysteryProfit: " + mysteryProfit);
-    setMysteryProfit(mysteryProfit);
-    setMysteryValue(mysteryProfit);
-    return { mysteryProfit, mysteryLockedValue };
+    const actualTreasureDeposit = await getSolendTreasureDeposit();
+    console.log("actualTreasureDeposit: " + actualTreasureDeposit);
+    if (actualTreasureDeposit > 0) {
+      const existingTreasureDeposit = getExistingSolendTreasureDeposit();
+      console.log("existingTreasureDeposit: " + existingTreasureDeposit);
+      const mysteryProfit = setPrecision(
+        actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue,
+        treasure.decimals
+      );
+      console.log("mysteryProfit: " + mysteryProfit);
+      setMysteryProfit(mysteryProfit);
+      setMysteryValue(mysteryProfit);
+      return { mysteryProfit, mysteryLockedValue };
+    } else {
+      return { mysteryProfit: 0, mysteryLockedValue };
+    }
   }
 
   async function openMystery() {
@@ -426,6 +433,16 @@ const Home = (props: HomeProps) => {
     }
   }, [wallet, props.connection]);
 
+  useEffect(() => {
+    (async () => {
+      console.log("Let's go update balance!");
+      if (wallet) {
+        const uiAmount = await getWalletTreasureBalance(wallet);
+        setBalance(uiAmount);
+      }
+    })();
+  }, [boxState]);
+
   return (
     <main>
       <MainContainer>
@@ -478,24 +495,23 @@ const Home = (props: HomeProps) => {
                   <PlayButton
                     createMystery={async () => {
                       console.log("Creating...");
-                      // await createMystery();
+                      await createMystery();
                       changeBoxState("created");
                     }}
                     openMystery={async () => {
                       console.log("Opening...");
-                      // await openMystery();
-                      //changeBoxState("opened");
+                      await openMystery();
                       changeBoxState("opened");
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
-                      // const claimResult = await claimMysteryReward();
-                      // if (claimResult) {
-                      //   resetBox();
-                      // }
-                      resetBox();
+                      const claimResult = await claimMysteryReward();
+                      if (claimResult) {
+                        resetBox();
+                      }
                     }}
                     boxState={boxState}
+                    mysteryValue={mysteryValue}
                   />
                   {boxState === "opened" && (
                     <RefuseTokenLink onClick={refuseMysteryToken}>

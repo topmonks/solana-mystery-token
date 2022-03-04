@@ -16,11 +16,13 @@ export const PlayButton = ({
   openMystery,
   claimMystery,
   boxState,
+  mysteryValue,
 }: {
   createMystery: () => Promise<void>;
   openMystery: () => Promise<void>;
   claimMystery: () => Promise<void>;
   boxState: string | null;
+  mysteryValue: number;
 }) => {
   return (
     <CTAButton
@@ -34,6 +36,7 @@ export const PlayButton = ({
         }
       }}
       variant="contained"
+      disabled={boxState === "created" && mysteryValue < 0.001}
     >
       {boxState === "created"
         ? "OPEN"
