@@ -1,22 +1,30 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import confetti from "canvas-confetti";
 import * as anchor from "@project-serum/anchor";
-import {PublicKey, Keypair} from "@solana/web3.js";
-import {AnchorWallet, useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
-import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
-import {Snackbar} from "@mui/material";
+import { PublicKey, Keypair } from "@solana/web3.js";
+import {
+  AnchorWallet,
+  useAnchorWallet,
+  useWallet,
+} from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { Snackbar } from "@mui/material";
 import Alert from "@mui/material/Alert";
-import {AlertState} from './utils';
-import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
-import {Jupiter, RouteInfo, TOKEN_LIST_URL} from "@jup-ag/core";
-import {PlayButton} from "./PlayButton";
-import {TextField} from "@mui/material";
+import { AlertState } from "./utils";
+import { SolendAction, SolendMarket } from "@solendprotocol/solend-sdk";
+import { Jupiter, RouteInfo, TOKEN_LIST_URL } from "@jup-ag/core";
+import { PlayButton } from "./PlayButton";
+import { TextField } from "@mui/material";
 
-const treasure = {account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6, code: "USDC"}
+const treasure = {
+  account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  decimals: 6,
+  code: "USDC",
+};
 
 let setPrecision = function (value: number, digits: number) {
-    return Math.round(value * Math.pow(10, digits)) / Math.pow(10, digits);
+  return Math.round(value * Math.pow(10, digits)) / Math.pow(10, digits);
 };
 
 const WalletContainer = styled.div`
@@ -34,9 +42,12 @@ const WalletAmount = styled.div`
   min-height: auto;
   border-radius: 22px;
   background-color: white;
-  box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 6px 10px 0px rgb(0 0 0 / 14%), 0px 1px 18px 0px rgb(0 0 0 / 12%);
+  box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%),
+    0px 6px 10px 0px rgb(0 0 0 / 14%), 0px 1px 18px 0px rgb(0 0 0 / 12%);
   box-sizing: border-box;
-  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+    border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   font-weight: 500;
   line-height: 1.75;
   text-transform: uppercase;
@@ -61,7 +72,7 @@ const Wallet = styled.ul`
 const ConnectButton = styled(WalletMultiButton)`
   border-radius: 18px !important;
   padding: 6px 16px;
-  background-color: #4E44CE;
+  background-color: #4e44ce;
   margin: 0 auto;
 `;
 
@@ -97,11 +108,11 @@ const Menu = styled.ul`
       }
     }
 
-    a:hover, a:active {
+    a:hover,
+    a:active {
       color: rgb(131, 146, 161);
       border-bottom: 4px solid var(--title-text-color);
     }
-
   }
 `;
 
@@ -148,7 +159,6 @@ export const RefuseTokenLink = styled.a`
   cursor: pointer !important;
 `;
 
-
 const PlayButtonContainer = styled.div`
   button.MuiButton-contained:not(.MuiButton-containedPrimary).Mui-disabled {
     color: #464646;
@@ -175,98 +185,105 @@ const PlayButtonContainer = styled.div`
 `;
 
 export interface HomeProps {
-    connection: anchor.web3.Connection;
-    txTimeout: number;
-    rpcHost: string;
-    network: string;
+  connection: anchor.web3.Connection;
+  txTimeout: number;
+  rpcHost: string;
+  network: string;
 }
 
 const Home = (props: HomeProps) => {
-    const [balance, setBalance] = useState<number>();
-    const [response, setResponse] = useState("");
-    const [mysteryValue, setMysteryValue] = useState(0);
-    const [alertState, setAlertState] = useState<AlertState>({
-        open: false,
-        message: "",
-        severity: undefined,
-    });
-    const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
-    const [amount, setAmount] = useState(0);
+  const [balance, setBalance] = useState<number>();
+  const [response, setResponse] = useState("");
+  const [mysteryValue, setMysteryValue] = useState(0);
+  const [alertState, setAlertState] = useState<AlertState>({
+    open: false,
+    message: "",
+    severity: undefined,
+  });
+  const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
+  const [amount, setAmount] = useState(0);
 
-    const wallet = useAnchorWallet();
-    const {publicKey, sendTransaction} = useWallet();
+  const wallet = useAnchorWallet();
+  const { publicKey, sendTransaction } = useWallet();
 
-    function setExistingSolendTreasureDeposit(amount: number) {
-        localStorage.setItem("depositedBeforeCreate", (amount * 100000).toString());
-        console.log(localStorage.getItem("depositedBeforeCreate"));
-    }
+  function setExistingSolendTreasureDeposit(amount: number) {
+    localStorage.setItem("depositedBeforeCreate", (amount * 100000).toString());
+    console.log(localStorage.getItem("depositedBeforeCreate"));
+  }
 
-    function getExistingSolendTreasureDeposit() {
-        const value = localStorage.getItem("depositedBeforeCreate");
-        return value ? setPrecision(parseFloat(value) / 1000000, treasure.decimals) : 0;
-    }
+  function getExistingSolendTreasureDeposit() {
+    const value = localStorage.getItem("depositedBeforeCreate");
+    return value
+      ? setPrecision(parseFloat(value) / 1000000, treasure.decimals)
+      : 0;
+  }
 
-    function setMysteryLockedValue(value: number) {
-        localStorage.setItem("mysteryLockedValue", (value * 100000).toString());
-        console.log(localStorage.getItem("mysteryLockedValue"));
-    }
+  function setMysteryLockedValue(value: number) {
+    localStorage.setItem("mysteryLockedValue", (value * 100000).toString());
+    console.log(localStorage.getItem("mysteryLockedValue"));
+  }
 
-    function getMysteryLockedValue() {
-        const value = localStorage.getItem("mysteryLockedValue");
-        return value ? setPrecision(parseFloat(value) / 1000000, treasure.decimals) : 0;
-    }
+  function getMysteryLockedValue() {
+    const value = localStorage.getItem("mysteryLockedValue");
+    return value
+      ? setPrecision(parseFloat(value) / 1000000, treasure.decimals)
+      : 0;
+  }
 
-    async function getSolendTreasureDeposit() {
-        console.log("start get existing solend deposit");
-        const market = await SolendMarket.initialize(
-            props.connection
+  async function getSolendTreasureDeposit() {
+    console.log("start get existing solend deposit");
+    const market = await SolendMarket.initialize(props.connection);
+    await market.loadReserves();
+    if (publicKey) {
+      const obligation = await market.fetchObligationByWallet(publicKey);
+      //USDC
+      const isDeposited = obligation?.deposits.find(
+        (reserve) => reserve.mintAddress === treasure.account
+      );
+      if (isDeposited) {
+        return setPrecision(
+          parseFloat(isDeposited.amount.toString()) / 1000000,
+          treasure.decimals
         );
-        await market.loadReserves();
-        if (publicKey) {
-            const obligation = await market.fetchObligationByWallet(publicKey);
-            //USDC
-            const isDeposited = obligation?.deposits.find(reserve => reserve.mintAddress === treasure.account);
-            if (isDeposited) {
-                return setPrecision(parseFloat(isDeposited.amount.toString()) / 1000000, treasure.decimals);
-            }
-        }
-        console.log("end");
-        return 0;
+      }
     }
+    console.log("end");
+    return 0;
+  }
 
-    async function depositToSolend(amount: number) {
-        console.log("start solend deposit");
+  async function depositToSolend(amount: number) {
+    console.log("start solend deposit");
 
-        const solendAction = await SolendAction.buildDepositTxns(
-            props.connection,
-            (amount * 1000000).toString(),
-            treasure.code,
-            publicKey as PublicKey,
-            "production"
-        );
-        console.log("end");
-        setMysteryLockedValue(amount);
-        return await solendAction.sendTransactions(sendTransaction);
-    }
+    const solendAction = await SolendAction.buildDepositTxns(
+      props.connection,
+      (amount * 1000000).toString(),
+      treasure.code,
+      publicKey as PublicKey,
+      "production"
+    );
+    console.log("end");
+    setMysteryLockedValue(amount);
+    return await solendAction.sendTransactions(sendTransaction);
+  }
 
-    async function withdrawFromSolend(amount: number) {
-        console.log("start solend withdraw");
-        console.log(setPrecision(amount * 1000000, 0).toString());
+  async function withdrawFromSolend(amount: number) {
+    console.log("start solend withdraw");
+    console.log(setPrecision(amount * 1000000, 0).toString());
 
-        const solendAction = await SolendAction.buildWithdrawTxns(
-            props.connection,
-            setPrecision(amount * 1000000, 0).toString(),
-            treasure.code,
-            publicKey as PublicKey,
-            "production"
-        );
-        const result = await solendAction.sendTransactions(sendTransaction);
-        console.log(result);
-        console.log("end");
-        return result;
-    }
+    const solendAction = await SolendAction.buildWithdrawTxns(
+      props.connection,
+      setPrecision(amount * 1000000, 0).toString(),
+      treasure.code,
+      publicKey as PublicKey,
+      "production"
+    );
+    const result = await solendAction.sendTransactions(sendTransaction);
+    console.log(result);
+    console.log("end");
+    return result;
+  }
 
-/*    async function claimMysteryReward(){
+  /*    async function claimMysteryReward(){
         const jupiter = await Jupiter.load({
             connection: props.connection,
             cluster: "mainnet-beta",
@@ -274,160 +291,184 @@ const Home = (props: HomeProps) => {
         });
     }*/
 
-    async function createMystery() {
-        const existingDeposit = await getSolendTreasureDeposit();
-        setExistingSolendTreasureDeposit(existingDeposit);
-        const txnDeposit = await depositToSolend(1);
-        if (txnDeposit) {
-            console.log(txnDeposit);
-            changeBoxState("created");
-        }
+  async function createMystery() {
+    const existingDeposit = await getSolendTreasureDeposit();
+    setExistingSolendTreasureDeposit(existingDeposit);
+    const txnDeposit = await depositToSolend(1);
+    if (txnDeposit) {
+      console.log(txnDeposit);
+      changeBoxState("created");
     }
+  }
 
-
-    async function getMysteryProfit() {
-        const existingTreasureDeposit = getExistingSolendTreasureDeposit();
-        console.log("existingTreasureDeposit: " + existingTreasureDeposit);
-        const actualTreasureDeposit = await getSolendTreasureDeposit();
-        console.log("actualTreasureDeposit: " + actualTreasureDeposit);
-        const mysteryLockedValue = getMysteryLockedValue();
-        console.log("mysteryLockedValue: " + mysteryLockedValue);
-        const mysteryProfit = setPrecision((actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue), treasure.decimals);
-        console.log("mysteryProfit: " + mysteryProfit);
-        setMysteryValue(mysteryProfit);
-        return {mysteryProfit, mysteryLockedValue};
-    }
-
-    async function openMystery() {
-        const data = await getMysteryProfit();
-        const valueToWithdraw = (data.mysteryProfit + data.mysteryLockedValue);
-        await withdrawFromSolend(valueToWithdraw);
-        changeBoxState("opened");
-    }
-
-    function throwConfetti(): void {
-        confetti({
-            particleCount: 400,
-            spread: 70,
-            origin: {y: 0.6},
-        });
-    }
-
-    const changeBoxState = (state: string) => {
-        if (state.length === 0) {
-            localStorage.removeItem("isBox");
-            setBoxState(null);
-        } else {
-            localStorage.setItem("isBox", state);
-            setBoxState(state);
-        }
-    }
-
-    async function getWalletTreasureBalance(wallet: any) {
-        const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, {mint: new PublicKey(treasure.account)});
-        console.log("USDC account");
-        console.log(tokenAccounts);
-        if (tokenAccounts?.value.length > 0) {
-            const tokenAmount = tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
-            console.log(tokenAmount);
-            return tokenAmount.uiAmount;
-        }
-    }
-
-    function refuseMysteryToken() {
-        //
-    }
-
-    const ref: { current: AnchorWallet | undefined } = useRef();
-
-    useEffect(() => {
-        if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
-            if (wallet) {
-                (async () => {
-                    const uiAmount = await getWalletTreasureBalance(wallet);
-                    setBalance(uiAmount);
-                    if (localStorage.getItem("isBox") === "created") {
-                        //show starts of actual box
-                        console.log("Our mystery box...");
-                        await getMysteryProfit();
-                    } else if (localStorage.getItem("isBox") === "opened") {
-                        //show starts of actual box
-                        console.log("Claim from mystery box...");
-                    } else {
-                        //UI to crate new mystery box
-                        console.log("No mystery box, create one!");
-                    }
-                })();
-            }
-            ref.current = wallet;
-        }
-    }, [wallet, props.connection]);
-
-    return (
-        <main>
-            <MainContainer>
-                <WalletContainer>
-                    <Logo><a href="http://localhost:3000/" target="_blank" rel="noopener noreferrer"><img alt=""
-                                                                                                          src="logo.png"/></a></Logo>
-                    <Menu/>
-                    <Wallet>
-                        {wallet ?
-                            <WalletAmount>{(balance || 0).toLocaleString()} USDC<ConnectButton/></WalletAmount> :
-                            <ConnectButton>Connect Wallet</ConnectButton>}
-                    </Wallet>
-                </WalletContainer>
-                <br/>
-                <MysteryContainer>
-                    <DesContainer>
-                        <p>
-                            {mysteryValue} USDC
-                        </p>
-                        <TextField style={{width: "300px", margin: "auto"}} id="outlined-basic" label="Amount" variant="outlined" value={amount} onChange={(e) => setAmount(parseInt(e.target.value))} />
-                        <PlayButtonContainer>
-                            {!wallet ? (
-                                <ConnectButton>Connect Wallet</ConnectButton>
-                            ) : (
-                                <div>
-                                    <PlayButton
-                                        createMystery={async () => {
-                                            console.log('Creating...');
-                                            await createMystery();
-                                        }}
-                                        openMystery={async () => {
-                                            console.log('Opening...');
-                                            await openMystery();
-                                            //changeBoxState("opened");
-                                        }}
-                                        claimMystery={async () => {
-                                            console.log('Claiming...');
-                                            changeBoxState("");
-                                        }}
-                                        boxState={boxState}
-                                    />
-                                    {boxState === "opened" &&
-                                    <RefuseTokenLink onClick={refuseMysteryToken}>Refuse mystery
-                                        token</RefuseTokenLink>}
-                                </div>
-                            )
-                            }
-                        </PlayButtonContainer>
-                    </DesContainer>
-                </MysteryContainer>
-            </MainContainer>
-            <Snackbar
-                open={alertState.open}
-                autoHideDuration={6000}
-                onClose={() => setAlertState({...alertState, open: false})}
-            >
-                <Alert
-                    onClose={() => setAlertState({...alertState, open: false})}
-                    severity={alertState.severity}
-                >
-                    {alertState.message}
-                </Alert>
-            </Snackbar>
-        </main>
+  async function getMysteryProfit() {
+    const existingTreasureDeposit = getExistingSolendTreasureDeposit();
+    console.log("existingTreasureDeposit: " + existingTreasureDeposit);
+    const actualTreasureDeposit = await getSolendTreasureDeposit();
+    console.log("actualTreasureDeposit: " + actualTreasureDeposit);
+    const mysteryLockedValue = getMysteryLockedValue();
+    console.log("mysteryLockedValue: " + mysteryLockedValue);
+    const mysteryProfit = setPrecision(
+      actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue,
+      treasure.decimals
     );
+    console.log("mysteryProfit: " + mysteryProfit);
+    setMysteryValue(mysteryProfit);
+    return { mysteryProfit, mysteryLockedValue };
+  }
+
+  async function openMystery() {
+    const data = await getMysteryProfit();
+    const valueToWithdraw = data.mysteryProfit + data.mysteryLockedValue;
+    await withdrawFromSolend(valueToWithdraw);
+    changeBoxState("opened");
+  }
+
+  function throwConfetti(): void {
+    confetti({
+      particleCount: 400,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+  }
+
+  const changeBoxState = (state: string) => {
+    if (state.length === 0) {
+      localStorage.removeItem("isBox");
+      setBoxState(null);
+    } else {
+      localStorage.setItem("isBox", state);
+      setBoxState(state);
+    }
+  };
+
+  async function getWalletTreasureBalance(wallet: any) {
+    const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(
+      wallet.publicKey,
+      { mint: new PublicKey(treasure.account) }
+    );
+    console.log("USDC account");
+    console.log(tokenAccounts);
+    if (tokenAccounts?.value.length > 0) {
+      const tokenAmount =
+        tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
+      console.log(tokenAmount);
+      return tokenAmount.uiAmount;
+    }
+  }
+
+  function refuseMysteryToken() {
+    //
+  }
+
+  const ref: { current: AnchorWallet | undefined } = useRef();
+
+  useEffect(() => {
+    if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
+      if (wallet) {
+        (async () => {
+          const uiAmount = await getWalletTreasureBalance(wallet);
+          setBalance(uiAmount);
+          if (localStorage.getItem("isBox") === "created") {
+            //show starts of actual box
+            console.log("Our mystery box...");
+            await getMysteryProfit();
+          } else if (localStorage.getItem("isBox") === "opened") {
+            //show starts of actual box
+            console.log("Claim from mystery box...");
+          } else {
+            //UI to crate new mystery box
+            console.log("No mystery box, create one!");
+          }
+        })();
+      }
+      ref.current = wallet;
+    }
+  }, [wallet, props.connection]);
+
+  return (
+    <main>
+      <MainContainer>
+        <WalletContainer>
+          <Logo>
+            <a
+              href="http://localhost:3000/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img alt="" src="logo.png" />
+            </a>
+          </Logo>
+          <Menu />
+          <Wallet>
+            {wallet ? (
+              <WalletAmount>
+                {(balance || 0).toLocaleString()} USDC
+                <ConnectButton />
+              </WalletAmount>
+            ) : (
+              <ConnectButton>Connect Wallet</ConnectButton>
+            )}
+          </Wallet>
+        </WalletContainer>
+        <br />
+        <MysteryContainer>
+          <DesContainer>
+            <p>{mysteryValue} USDC</p>
+            <TextField
+              style={{ width: "300px", margin: "auto" }}
+              id="outlined-basic"
+              label="Amount"
+              variant="outlined"
+              value={amount}
+              onChange={(e) => setAmount(parseInt(e.target.value))}
+            />
+            <PlayButtonContainer>
+              {!wallet ? (
+                <ConnectButton>Connect Wallet</ConnectButton>
+              ) : (
+                <div>
+                  <PlayButton
+                    createMystery={async () => {
+                      console.log("Creating...");
+                      await createMystery();
+                    }}
+                    openMystery={async () => {
+                      console.log("Opening...");
+                      await openMystery();
+                      //changeBoxState("opened");
+                    }}
+                    claimMystery={async () => {
+                      console.log("Claiming...");
+                      changeBoxState("");
+                    }}
+                    boxState={boxState}
+                  />
+                  {boxState === "opened" && (
+                    <RefuseTokenLink onClick={refuseMysteryToken}>
+                      Refuse mystery token
+                    </RefuseTokenLink>
+                  )}
+                </div>
+              )}
+            </PlayButtonContainer>
+          </DesContainer>
+        </MysteryContainer>
+      </MainContainer>
+      <Snackbar
+        open={alertState.open}
+        autoHideDuration={6000}
+        onClose={() => setAlertState({ ...alertState, open: false })}
+      >
+        <Alert
+          onClose={() => setAlertState({ ...alertState, open: false })}
+          severity={alertState.severity}
+        >
+          {alertState.message}
+        </Alert>
+      </Snackbar>
+    </main>
+  );
 };
 
 export default Home;

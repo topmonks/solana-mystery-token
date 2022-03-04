@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import Button from '@mui/material/Button';
+import styled from "styled-components";
+import Button from "@mui/material/Button";
 
 export const CTAButton = styled(Button)`
   display: block !important;
@@ -10,37 +10,34 @@ export const CTAButton = styled(Button)`
 `;
 
 export const PlayButton = ({
-                               createMystery,
-                               openMystery,
-                               claimMystery,
-                                boxState
-                           }: {
-    createMystery: () => Promise<void>;
-    openMystery: () => Promise<void>;
-    claimMystery: () => Promise<void>;
-    boxState: string | null;
+  createMystery,
+  openMystery,
+  claimMystery,
+  boxState,
+}: {
+  createMystery: () => Promise<void>;
+  openMystery: () => Promise<void>;
+  claimMystery: () => Promise<void>;
+  boxState: string | null;
 }) => {
-
-    return (
-        <CTAButton
-            onClick={async () => {
-                if (!boxState) {
-                    await createMystery();
-                } else if (boxState === "created") {
-                    await openMystery();
-                } else if (boxState === "opened") {
-                    await claimMystery();
-                }
-            }}
-            variant="contained"
-        >
-            {(boxState === "created") ? (
-                'OPEN'
-            ) : (boxState === "opened") ? (
-                "CLAIM"
-            ) : (
-                "CREATE"
-            )}
-        </CTAButton>
-    );
+  return (
+    <CTAButton
+      onClick={async () => {
+        if (!boxState) {
+          await createMystery();
+        } else if (boxState === "created") {
+          await openMystery();
+        } else if (boxState === "opened") {
+          await claimMystery();
+        }
+      }}
+      variant="contained"
+    >
+      {boxState === "created"
+        ? "OPEN"
+        : boxState === "opened"
+        ? "CLAIM"
+        : "CREATE"}
+    </CTAButton>
+  );
 };

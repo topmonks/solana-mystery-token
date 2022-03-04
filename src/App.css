@@ -1,29 +1,29 @@
 /* Customize your main colors in :root variables */
-@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato&display=swap");
 
 :root {
   --main-background-color: white;
   --card-background-color: white;
-  --card-background-lighter-color: #7A7F92;
-  --main-text-color:#001f3f;
-  --title-text-color:#001f3f;
-  --second-accent:#7462e0;
-  --first-accent:#f0be59;
+  --card-background-lighter-color: #7a7f92;
+  --main-text-color: #001f3f;
+  --title-text-color: #001f3f;
+  --second-accent: #7462e0;
+  --first-accent: #f0be59;
   --disabled: grey;
 }
 
-body{
-  background-color:var(--main-background-color);
-  font: 16px/1.5 Lato,lato,-apple-system,BlinkMacSystemFont,Roboto,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+body {
+  background-color: var(--main-background-color);
+  font: 16px/1.5 Lato, lato, -apple-system, BlinkMacSystemFont, Roboto, Segoe UI,
+    Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+    Segoe UI Symbol;
 }
 
-h2, p{
+h2,
+p {
   color: var(--main-text-color);
 }
 
-h3{
+h3 {
   font-weight: normal;
 }
-
-
-

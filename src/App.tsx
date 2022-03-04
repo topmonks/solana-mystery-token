@@ -21,15 +21,13 @@ import {
   getSafePalWallet,
 } from "@solana/wallet-adapter-wallets";
 
-import {
-  WalletModalProvider
-} from '@solana/wallet-adapter-react-ui';
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
 import "./App.css";
 import Home from "./Home";
-import {dark} from "@mui/material/styles/createPalette";
+import { dark } from "@mui/material/styles/createPalette";
 
-require('@solana/wallet-adapter-react-ui/styles.css');
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 const network = process.env.REACT_APP_SOLANA_NETWORK as WalletAdapterNetwork;
 const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST!;
@@ -67,33 +65,33 @@ const App = () => {
   // Only the wallets you configure here will be compiled into your application, and only the dependencies
   // of wallets that your users connect to will be loaded.
   const wallets = useMemo(
-      () => [
-        getPhantomWallet(),
-        getSlopeWallet(),
-        getSolflareWallet(),
-        getSolflareWebWallet(),
-        getSolletWallet({ network }),
-        getSolletExtensionWallet({ network }),
-        getSolongWallet(),
-        getLedgerWallet(),
-        getSafePalWallet(),
-      ],
-      []
+    () => [
+      getPhantomWallet(),
+      getSlopeWallet(),
+      getSolflareWallet(),
+      getSolflareWebWallet(),
+      getSolletWallet({ network }),
+      getSolletExtensionWallet({ network }),
+      getSolongWallet(),
+      getLedgerWallet(),
+      getSafePalWallet(),
+    ],
+    []
   );
 
   return (
-        <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} autoConnect={true}>
-            <WalletModalProvider>
-              <Home
-                  connection={connection}
-                  txTimeout={txTimeout}
-                  rpcHost={rpcHost}
-                  network={network}
-              />
-            </WalletModalProvider>
-          </WalletProvider>
-        </ConnectionProvider>
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect={true}>
+        <WalletModalProvider>
+          <Home
+            connection={connection}
+            txTimeout={txTimeout}
+            rpcHost={rpcHost}
+            network={network}
+          />
+        </WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
   );
 };
 
