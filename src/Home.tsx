@@ -18,7 +18,7 @@ import { PlayButton } from "./PlayButton";
 import { TextField } from "@mui/material";
 
 const treasure = {
-  account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
   decimals: 6,
   code: "USDC",
 };
@@ -201,13 +201,16 @@ const Home = (props: HomeProps) => {
     severity: undefined,
   });
   const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
 
   const wallet = useAnchorWallet();
   const { publicKey, sendTransaction } = useWallet();
 
   function setExistingSolendTreasureDeposit(amount: number) {
-    localStorage.setItem("depositedBeforeCreate", (amount * 100000).toString());
+    localStorage.setItem(
+      "depositedBeforeCreate",
+      (amount * 1000000).toString()
+    );
     console.log(localStorage.getItem("depositedBeforeCreate"));
   }
 
@@ -219,7 +222,7 @@ const Home = (props: HomeProps) => {
   }
 
   function setMysteryLockedValue(value: number) {
-    localStorage.setItem("mysteryLockedValue", (value * 100000).toString());
+    localStorage.setItem("mysteryLockedValue", (value * 1000000).toString());
     console.log(localStorage.getItem("mysteryLockedValue"));
   }
 
@@ -227,6 +230,17 @@ const Home = (props: HomeProps) => {
     const value = localStorage.getItem("mysteryLockedValue");
     return value
       ? setPrecision(parseFloat(value) / 1000000, treasure.decimals)
+      : 0;
+  }
+
+  function setMysteryProfit(amount: number) {
+    localStorage.setItem("mysteryProfit", (amount * 100000).toString());
+  }
+
+  function getMysteryProfit() {
+    const profit = localStorage.getItem("mysteryProfit");
+    return profit
+      ? setPrecision(parseFloat(profit) / 1000000, treasure.decimals)
       : 0;
   }
 
@@ -238,7 +252,7 @@ const Home = (props: HomeProps) => {
       const obligation = await market.fetchObligationByWallet(publicKey);
       //USDC
       const isDeposited = obligation?.deposits.find(
-        (reserve) => reserve.mintAddress === treasure.account
+        (reserve) => reserve.mintAddress === treasure.address
       );
       if (isDeposited) {
         return setPrecision(
@@ -283,25 +297,46 @@ const Home = (props: HomeProps) => {
     return result;
   }
 
-  /*    async function claimMysteryReward(){
-        const jupiter = await Jupiter.load({
-            connection: props.connection,
-            cluster: "mainnet-beta",
-            publicKey
-        });
-    }*/
+  async function claimMysteryReward() {
+    const profitAmount = getMysteryProfit();
+    console.log("Going to claim mystery for " + profitAmount.toString());
+    const jupiter = await Jupiter.load({
+      connection: props.connection,
+      cluster: "mainnet-beta",
+      user: publicKey as PublicKey,
+    });
+
+    const routes = await jupiter.computeRoutes({
+      inputMint: new PublicKey(treasure.address),
+      outputMint: new PublicKey("HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6"),
+      inputAmount: profitAmount * 1000000,
+      slippage: 1,
+      forceFetch: true,
+    });
+    console.log(routes);
+    // Prepare execute exchange
+    const { transactions } = await jupiter.exchange({
+      route: routes!.routesInfos[0],
+    });
+    const { setupTransaction, swapTransaction, cleanupTransaction } =
+      transactions;
+    const txid = await sendTransaction(swapTransaction, props.connection);
+    await props.connection.confirmTransaction(txid, "processed");
+    console.log(`https://solscan.io/tx/${txid}`);
+    return txid;
+  }
 
   async function createMystery() {
     const existingDeposit = await getSolendTreasureDeposit();
     setExistingSolendTreasureDeposit(existingDeposit);
-    const txnDeposit = await depositToSolend(1);
+    const txnDeposit = await depositToSolend(parseFloat(amount));
     if (txnDeposit) {
       console.log(txnDeposit);
       changeBoxState("created");
     }
   }
 
-  async function getMysteryProfit() {
+  async function calculateMysteryProfit() {
     const existingTreasureDeposit = getExistingSolendTreasureDeposit();
     console.log("existingTreasureDeposit: " + existingTreasureDeposit);
     const actualTreasureDeposit = await getSolendTreasureDeposit();
@@ -313,12 +348,13 @@ const Home = (props: HomeProps) => {
       treasure.decimals
     );
     console.log("mysteryProfit: " + mysteryProfit);
+    setMysteryProfit(mysteryProfit);
     setMysteryValue(mysteryProfit);
     return { mysteryProfit, mysteryLockedValue };
   }
 
   async function openMystery() {
-    const data = await getMysteryProfit();
+    const data = await calculateMysteryProfit();
     const valueToWithdraw = data.mysteryProfit + data.mysteryLockedValue;
     await withdrawFromSolend(valueToWithdraw);
     changeBoxState("opened");
@@ -332,20 +368,23 @@ const Home = (props: HomeProps) => {
     });
   }
 
+  const resetBox = () => {
+    localStorage.removeItem("isBox");
+    localStorage.removeItem("depositedBeforeCreate");
+    localStorage.removeItem("mysteryLockedValue");
+    localStorage.removeItem("mysteryProfit");
+    setBoxState(null);
+  };
+
   const changeBoxState = (state: string) => {
-    if (state.length === 0) {
-      localStorage.removeItem("isBox");
-      setBoxState(null);
-    } else {
-      localStorage.setItem("isBox", state);
-      setBoxState(state);
-    }
+    localStorage.setItem("isBox", state);
+    setBoxState(state);
   };
 
   async function getWalletTreasureBalance(wallet: any) {
     const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(
       wallet.publicKey,
-      { mint: new PublicKey(treasure.account) }
+      { mint: new PublicKey(treasure.address) }
     );
     console.log("USDC account");
     console.log(tokenAccounts);
@@ -372,7 +411,7 @@ const Home = (props: HomeProps) => {
           if (localStorage.getItem("isBox") === "created") {
             //show starts of actual box
             console.log("Our mystery box...");
-            await getMysteryProfit();
+            await calculateMysteryProfit();
           } else if (localStorage.getItem("isBox") === "opened") {
             //show starts of actual box
             console.log("Claim from mystery box...");
@@ -421,7 +460,9 @@ const Home = (props: HomeProps) => {
               label="Amount"
               variant="outlined"
               value={amount}
-              onChange={(e) => setAmount(parseInt(e.target.value))}
+              onChange={(e) => {
+                setAmount(e.target.value);
+              }}
             />
             <PlayButtonContainer>
               {!wallet ? (
@@ -440,7 +481,10 @@ const Home = (props: HomeProps) => {
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
-                      changeBoxState("");
+                      const claimResult = await claimMysteryReward();
+                      if (claimResult) {
+                        resetBox();
+                      }
                     }}
                     boxState={boxState}
                   />
