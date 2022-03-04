@@ -168,6 +168,7 @@ export interface HomeProps {
 const Home = (props: HomeProps) => {
     const [balance, setBalance] = useState<number>();
     const [response, setResponse] = useState("");
+    const [mysteryValue, setMysteryValue] = useState(0);
     const [alertState, setAlertState] = useState<AlertState>({
         open: false,
         message: "",
@@ -250,7 +251,7 @@ const Home = (props: HomeProps) => {
         console.log("mysteryLockedValue: " + mysteryLockedValue);
         const mysteryProfit = (actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue);
         console.log("mysteryProfit: " + mysteryProfit);
-
+        setMysteryValue(mysteryProfit);
     }
 
     async function openMystery(){
@@ -328,7 +329,7 @@ const Home = (props: HomeProps) => {
                 <MysteryContainer>
                     <DesContainer>
                         <p>
-                            It's <time dateTime={response}>{response}</time>
+                           {mysteryValue} USDC
                         </p>
                         <PlayButtonContainer>
                             {!wallet ? (
