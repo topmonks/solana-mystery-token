@@ -1,6 +1,6 @@
 import React from "react";
 
-import { createTheme, ThemeProvider } from "@material-ui/core";
+import { createTheme, ThemeProvider } from "@mui/material";
 import { useMemo } from "react";
 import {
   ConnectionProvider,
@@ -27,6 +27,7 @@ import {
 
 import "./App.css";
 import Home from "./Home";
+import {dark} from "@mui/material/styles/createPalette";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -37,30 +38,27 @@ const connection = new anchor.web3.Connection(rpcHost);
 
 const txTimeout = 30000; // milliseconds (confirm this works for your project)
 
-const theme = createTheme({
-  palette: {
-    type: 'dark',
-  },
-  overrides: {
-    MuiButtonBase: {
-      root: {
-        justifyContent: 'flex-start',
-      },
-    },
-    MuiButton: {
-      root: {
-        textTransform: undefined,
-        padding: '12px 16px',
-      },
-      startIcon: {
-        marginRight: 8,
-      },
-      endIcon: {
-        marginLeft: 8,
-      },
-    },
-  },
-});
+// const theme = createTheme({
+//   overrides: {
+//     MuiButtonBase: {
+//       root: {
+//         justifyContent: 'flex-start',
+//       },
+//     },
+//     MuiButton: {
+//       root: {
+//         textTransform: undefined,
+//         padding: '12px 16px',
+//       },
+//       startIcon: {
+//         marginRight: 8,
+//       },
+//       endIcon: {
+//         marginLeft: 8,
+//       },
+//     },
+//   },
+// });
 
 const App = () => {
   // Custom RPC endpoint.
@@ -85,7 +83,6 @@ const App = () => {
   );
 
   return (
-      <ThemeProvider theme={theme}>
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} autoConnect={true}>
             <WalletModalProvider>
@@ -97,7 +94,6 @@ const App = () => {
             </WalletModalProvider>
           </WalletProvider>
         </ConnectionProvider>
-      </ThemeProvider>
   );
 };
 

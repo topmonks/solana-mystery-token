@@ -5,12 +5,12 @@ import * as anchor from "@project-serum/anchor";
 import {PublicKey} from "@solana/web3.js";
 import {AnchorWallet, useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
-import {Snackbar} from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert";
+import {Snackbar} from "@mui/material";
+import Alert from "@mui/material/Alert";
 import {AlertState} from './utils';
 import {SolendAction, SolendMarket} from "@solendprotocol/solend-sdk";
 import {PlayButton} from "./PlayButton";
-import Button from "@material-ui/core/Button";
+import {TextField} from "@mui/material";
 
 const treasure = {account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6, code: "USDC"}
 
@@ -189,6 +189,7 @@ const Home = (props: HomeProps) => {
         severity: undefined,
     });
     const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
+    const [amount, setAmount] = useState(0);
 
     const wallet = useAnchorWallet();
     const { publicKey, sendTransaction } = useWallet();
@@ -371,6 +372,7 @@ const Home = (props: HomeProps) => {
                         <p>
                            {mysteryValue} USDC
                         </p>
+                        <TextField style={{width: "300px", margin: "auto"}} id="outlined-basic" label="Amount" variant="outlined" value={amount} onChange={(e) => setAmount(parseInt(e.target.value))} />
                         <PlayButtonContainer>
                             {!wallet ? (
                                 <ConnectButton>Connect Wallet</ConnectButton>
