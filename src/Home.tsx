@@ -245,7 +245,7 @@ const Home = (props: HomeProps) => {
 
   function setMysteryProfit(amount: number) {
     const boxes = getMyBox();
-    boxes.data[boxes.index].mysteryLockedValue = (amount * 1000000).toString();
+    boxes.data[boxes.index].mysteryProfit = (amount * 1000000).toString();
     setBoxes(boxes.data);
   }
 
@@ -434,8 +434,10 @@ const Home = (props: HomeProps) => {
       const data = await calculateMysteryProfit();
       if (data) {
         const valueToWithdraw = data.mysteryProfit + data.mysteryLockedValue;
-        await withdrawFromSolend(valueToWithdraw);
-        changeBoxState("opened");
+        const result = await withdrawFromSolend(valueToWithdraw);
+        if (result) {
+          changeBoxState("opened");
+        }
       }
     } catch (e) {
       setAlertState({
@@ -651,7 +653,6 @@ const Home = (props: HomeProps) => {
                     openMystery={async () => {
                       console.log("Opening...");
                       await openMystery();
-                      changeBoxState("opened");
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
