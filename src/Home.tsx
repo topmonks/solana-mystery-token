@@ -201,7 +201,7 @@ const Home = (props: HomeProps) => {
     message: "",
     severity: undefined,
   });
-  const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
+  const [boxState, setBoxState] = useState("");
   const [amount, setAmount] = useState("");
   const [openCube, setOpenCube] = useState(() => {});
 
@@ -383,7 +383,7 @@ const Home = (props: HomeProps) => {
     localStorage.removeItem("mysteryLockedValue");
     localStorage.removeItem("mysteryProfit");
     localStorage.removeItem("awardToken");
-    setBoxState(null);
+    setBoxState("");
   };
 
   const changeBoxState = (state: string) => {
@@ -410,6 +410,28 @@ const Home = (props: HomeProps) => {
     resetBox();
   }
 
+  function getMyBox() {
+    const defaultBox = {
+      address: wallet?.publicKey?.toString(),
+      state: null,
+      depositedBeforeCreate: null,
+      mysteryLockedValue: null,
+      mysteryProfit: null,
+      awardToken: null,
+    };
+    const boxes = localStorage.getItem("boxes");
+    if (boxes === null) {
+      localStorage.setItem("boxes", JSON.stringify([defaultBox]));
+      return defaultBox;
+    } else {
+      const boxesJson = JSON.parse(boxes);
+      const myBox = boxesJson.find(
+        (x: { address: string }) => x.address === wallet?.publicKey.toString()
+      );
+      return myBox;
+    }
+  }
+
   const ref: { current: AnchorWallet | undefined } = useRef();
 
   useEffect(() => {
@@ -418,11 +440,13 @@ const Home = (props: HomeProps) => {
         (async () => {
           const uiAmount = await getWalletTreasureBalance(wallet);
           setBalance(uiAmount);
-          if (localStorage.getItem("isBox") === "created") {
+          const myBox = getMyBox();
+
+          if (myBox.state === "created") {
             //show starts of actual box
             console.log("Our mystery box...");
             await calculateMysteryProfit();
-          } else if (localStorage.getItem("isBox") === "opened") {
+          } else if (myBox.state === "opened") {
             //show starts of actual box
             console.log("Claim from mystery box...");
           } else {
@@ -479,7 +503,7 @@ const Home = (props: HomeProps) => {
                 Mystery value: {mysteryValue} USDC
               </p>
             )}
-            {boxState === null && (
+            {boxState === "" && (
               <TextField
                 style={{ width: "300px", margin: "auto" }}
                 id="outlined-basic"

@@ -220,7 +220,7 @@ export interface MysteryBoxProps {
 
 function MysteryBox(props: MysteryBoxProps) {
   const [cubeState, setCubeState] = useState(
-    props.boxState === null ? "start" : props.boxState
+    props.boxState === "" ? "start" : props.boxState
   );
   const [topStyle, setTopStyle] = useState({});
   const [backStyle, setBackStyle] = useState({});
@@ -263,11 +263,11 @@ function MysteryBox(props: MysteryBoxProps) {
   }
 
   useEffect(() => {
-    setCubeState(props.boxState === null ? "start" : props.boxState);
+    setCubeState(props.boxState === "" ? "start" : props.boxState);
 
     if (props.boxState === "opened") {
       openCube();
-    } else if (props.boxState === null) {
+    } else if (props.boxState === "") {
       closeCube();
     }
   }, [props.boxState]);
