@@ -623,7 +623,7 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            <MysteryBox boxState={boxState} />
+            <MysteryBox boxState={boxState} getMyBox={getMyBox} />
             {boxState === "created" && (
               <p style={{ color: "#fe9110" }}>
                 Mystery value: {mysteryValue} USDC

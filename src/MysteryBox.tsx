@@ -215,6 +215,7 @@ function getRandomInt(max: number) {
 
 export interface MysteryBoxProps {
   boxState: string | null;
+  getMyBox: Function;
 }
 
 function MysteryBox(props: MysteryBoxProps) {
@@ -276,14 +277,12 @@ function MysteryBox(props: MysteryBoxProps) {
   }
   function award() {
     const randomTokenIndex = getRandomInt(mysteryTokens.length);
-    const awardToken = localStorage.getItem("awardToken");
-    if (typeof awardToken === "string") {
-      setPowerupImage(JSON.parse(awardToken).name + ".png");
+    const boxes = props.getMyBox();
+    if (boxes.data[boxes.index].awardToken) {
+      setPowerupImage(boxes.data[boxes.index].awardToken.name + ".png");
     } else {
-      localStorage.setItem(
-        "awardToken",
-        JSON.stringify(mysteryTokens[randomTokenIndex])
-      );
+      boxes.data[boxes.index].awardToken = mysteryTokens[randomTokenIndex];
+      localStorage.setItem("boxes", JSON.stringify(boxes));
       setPowerupImage(mysteryTokens[randomTokenIndex].name + ".png");
     }
     changeVar("rgba(69,185,251,0.33)");
