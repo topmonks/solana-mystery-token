@@ -202,15 +202,31 @@ const MysteryBoxContainer = styled.div`
   }
 `;
 
+const mysteryTokens = ["bnb.png", "btc.png", "eth.png", "hoge.png", "sol.png"];
+
+function getRandomInt(max: number) {
+  return Math.floor(Math.random() * max);
+}
+
 export interface MysteryBoxProps {
   boxState: string | null;
+  setOpenCube: Function;
 }
 
 function MysteryBox(props: MysteryBoxProps) {
   const [cubeState, setCubeState] = useState(
     props.boxState === null ? "start" : props.boxState
   );
+  const [topStyle, setTopStyle] = useState({});
+  const [backStyle, setBackStyle] = useState({});
+  const [rightStyle, setRightStyle] = useState({});
+  const [leftStyle, setLeftStyle] = useState({});
+  const [powerupStyle, setPowerupStyle] = useState({});
+  const [powerupImage, setPowerupImage] = useState("");
+  const [glowStyle, setGlowStyle] = useState({});
+  const [cubeStyle, setCubeStyle] = useState({});
 
+  let c = 0;
   console.log(cubeState);
 
   useEffect(
@@ -218,82 +234,91 @@ function MysteryBox(props: MysteryBoxProps) {
     [props.boxState]
   );
 
+  useEffect(() => {
+    props.setOpenCube(openCube);
+  }, [props.setOpenCube]);
+
   function openCube() {
     if (cubeState !== "opened") {
       award();
+      setTopStyle({
+        transform: "translateY(-3rem)",
+        opacity: 0.1,
+      });
+      setLeftStyle({ transform: "translateX(-3rem)", opacity: 0.1 });
+      setRightStyle({ transform: "translateX(3rem)", opacity: 0.1 });
+      setBackStyle({ opacity: 0.1 });
+      setGlowStyle({ opacity: 0.5 });
+      setPowerupStyle({
+        opacity: 1,
+        zIndex: 10,
+        height: "300px",
+        width: "300px",
+      });
       setCubeState("opened");
+      setCubeStyle({ animationPlayState: "paused" });
+    } else {
+      // ctop.style.transform = "translateY(0)";
+      // cleft.style.transform = "translateX(0)";
+      // cright.style.transform = "translateX(0)";
+      // cube.style.opacity = 1;
+      // this.isOpen = false;
+      // ctop.style.opacity = 1;
+      // cleft.style.opacity = 1;
+      // cright.style.opacity = 1;
+      // cback.style.opacity = 1;
+      // glow.style.opacity = 1;
+      // powerup.style.opacity = 0;
+      // powerup.style.zIndex = 0;
+      // cube.style.animationPlayState = "running";
+      // powerup.style.height = "48px";
+      // powerup.style.width = "48px";
+      // changeVar("rgba(255,195,26,0.4)");
     }
   }
-  //   if (!this.isOpen) {
-  //     award();
-  //     ctop.style.transform = "translateY(-3rem)";
-  //     cleft.style.transform = "translateX(-3rem)";
-  //     cright.style.transform = "translateX(3rem)";
-  //     ctop.style.opacity = 0.1;
-  //     cleft.style.opacity = 0.1;
-  //     cright.style.opacity = 0.1;
-  //     cback.style.opacity = 0.1;
-  //     glow.style.opacity = 0.5;
-  //     powerup.style.opacity = 1;
-  //     this.isOpen = true;
-  //     cube.style.animationPlayState = "paused";
-  //     powerup.style.zIndex = 10;
-  //     powerup.style.height = "80px";
-  //     powerup.style.width = "80px";
-  //   } else {
-  //     ctop.style.transform = "translateY(0)";
-  //     cleft.style.transform = "translateX(0)";
-  //     cright.style.transform = "translateX(0)";
-  //     cube.style.opacity = 1;
-  //     this.isOpen = false;
-  //     ctop.style.opacity = 1;
-  //     cleft.style.opacity = 1;
-  //     cright.style.opacity = 1;
-  //     cback.style.opacity = 1;
-  //     glow.style.opacity = 1;
-  //     powerup.style.opacity = 0;
-  //     powerup.style.zIndex = 0;
-  //     cube.style.animationPlayState = "running";
-  //     powerup.style.height = "48px";
-  //     powerup.style.width = "48px";
-  //     changeVar("rgba(255,195,26,0.4)");
-  //   }
-  // }
-  //
-  // function changeVar(glow) {
-  //   document.documentElement.style.setProperty("--glow", glow);
-  // }
-  //
+
+  function changeVar(glow: string) {
+    document.documentElement.style.setProperty("--glow", glow);
+  }
   function award() {
-    // if (c % 2 == 0) {
-    //pp
-    // powerup.style.backgroundImage =
-    //   "url('https://cf.quizizz.com/game/img/powerups/lg/power-play.png')";
-    // changeVar("rgba(69,185,251,0.33)");
-    // } else {
-    //   // glitch
-    //   powerup.style.backgroundImage =
-    //     "url('https://cf.quizizz.com/game/img/powerups/lg/glitch.png')";
-    //   changeVar("rgba(246,6,120,0.4)");
-    // }
-    // c++;
+    const randomTokenIndex = getRandomInt(mysteryTokens.length - 1);
+    setPowerupImage(mysteryTokens[randomTokenIndex]);
+    changeVar("rgba(69,185,251,0.33)");
   }
 
   return (
     <MysteryBoxContainer>
       <div
+        onClick={() => openCube()}
         className={`m-auto bg-black h-screen w-screen flex justify-center items-center ${cubeState}`}
       >
         <div
           id="cube"
           className={`h-40 w-40 relative flex justify-center items-center cursor-pointer ${cubeState}`}
+          style={cubeStyle}
         >
-          <div className="hexagon absolute" />
-          <div className="cube back h-40 w-40 absolute top-0 left-0" />
-          <div className="cube top h-40 w-40 absolute top-0 left-0" />
-          <div className="cube left h-40 w-40 absolute top-0 left-0" />
-          <div className="cube right h-40 w-40 absolute top-0 left-0" />
-          <div className="powerup absolute" />
+          <div className="hexagon absolute" style={glowStyle} />
+          <div
+            style={backStyle}
+            className="cube back h-40 w-40 absolute top-0 left-0"
+          />
+          <div
+            style={topStyle}
+            className="cube d top h-40 w-40 absolute top-0 left-0"
+          />
+          <div
+            style={leftStyle}
+            className="cube left h-40 w-40 absolute top-0 left-0"
+          />
+          <div
+            style={rightStyle}
+            className="cube right h-40 w-40 absolute top-0 left-0"
+          />
+          <img
+            className="powerup absolute"
+            src={powerupImage}
+            style={powerupStyle}
+          />
         </div>
       </div>
     </MysteryBoxContainer>

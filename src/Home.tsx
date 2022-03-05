@@ -203,6 +203,7 @@ const Home = (props: HomeProps) => {
   });
   const [boxState, setBoxState] = useState(localStorage.getItem("isBox"));
   const [amount, setAmount] = useState("");
+  const [openCube, setOpenCube] = useState(() => {});
 
   const wallet = useAnchorWallet();
   const { publicKey, sendTransaction } = useWallet();
@@ -471,7 +472,7 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            <MysteryBox boxState={boxState} />
+            <MysteryBox boxState={boxState} setOpenCube={setOpenCube} />
             {boxState === "created" && (
               <p style={{ color: "#fe9110" }}>
                 Mystery value: {mysteryValue} USDC
@@ -495,23 +496,26 @@ const Home = (props: HomeProps) => {
                   <PlayButton
                     createMystery={async () => {
                       console.log("Creating...");
-                      await createMystery();
+                      // await createMystery();
                       changeBoxState("created");
                     }}
                     openMystery={async () => {
                       console.log("Opening...");
-                      await openMystery();
+                      // await openMystery();
                       changeBoxState("opened");
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
-                      const claimResult = await claimMysteryReward();
-                      if (claimResult) {
-                        resetBox();
-                      }
+                      // const claimResult = await claimMysteryReward();
+                      // if (claimResult) {
+                      resetBox();
+                      // }
                     }}
                     boxState={boxState}
                     mysteryValue={mysteryValue}
+                    openCube={() => {
+                      openCube();
+                    }}
                   />
                   {boxState === "opened" && (
                     <RefuseTokenLink
