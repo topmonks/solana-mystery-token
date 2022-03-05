@@ -507,7 +507,14 @@ const Home = (props: HomeProps) => {
       const myBox = boxesJson.find(
         (x: { address: string }) => x.address === wallet?.publicKey.toString()
       );
-      return myBox;
+      if (myBox) {
+        return myBox;
+      } else {
+        //Add box for new address
+        boxesJson.push(defaultBox);
+        localStorage.setItem("boxes", JSON.stringify(boxesJson));
+        return defaultBox;
+      }
     }
   }
 
