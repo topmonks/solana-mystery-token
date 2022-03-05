@@ -618,6 +618,16 @@ const Home = (props: HomeProps) => {
             >
               <img alt="" src="logo.png" style={{ height: "100px" }} />
             </a>
+            <img
+              alt=""
+              src="logo_solend.png"
+              style={{ height: "100px", marginLeft: "25px" }}
+            />
+            <img
+              alt=""
+              src="logo_jupiter.svg"
+              style={{ height: "100px", marginLeft: "25px" }}
+            />
           </Logo>
           <Menu />
           <Wallet>
@@ -666,7 +676,6 @@ const Home = (props: HomeProps) => {
                           try {
                             console.log("Creating...");
                             await createMystery();
-                            changeBoxState("created");
                           } catch (e) {
                             console.log(e);
                             setAlertState({
