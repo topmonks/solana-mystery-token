@@ -203,19 +203,20 @@ const Home = (props: HomeProps) => {
     message: "",
     severity: undefined,
   });
+
+  // Init wallet
+  const wallet = useAnchorWallet();
+  const { publicKey, sendTransaction } = useWallet();
+
   const [boxState, setBoxState] = useState("");
   const [amount, setAmount] = useState("");
   const [openCube, setOpenCube] = useState(() => {});
-
-  const wallet = useAnchorWallet();
-  const { publicKey, sendTransaction } = useWallet();
 
   function setExistingSolendTreasureDeposit(amount: number) {
     localStorage.setItem(
       "depositedBeforeCreate",
       (amount * 1000000).toString()
     );
-    console.log(localStorage.getItem("depositedBeforeCreate"));
   }
 
   function getExistingSolendTreasureDeposit() {
@@ -489,10 +490,19 @@ const Home = (props: HomeProps) => {
     resetBox();
   }
 
+  function findMyBoxIndex(boxesJson: any) {
+    return boxesJson.findIndex(
+      (x: { address: string }) => x.address === wallet?.publicKey.toString()
+    );
+  }
+
+  function setBoxes(boxesJson: any) {
+    localStorage.setItem("boxes", JSON.stringify(boxesJson));
+  }
+
   function getMyBox() {
     const defaultBox = {
       address: wallet?.publicKey?.toString(),
-      state: null,
       depositedBeforeCreate: null,
       mysteryLockedValue: null,
       mysteryProfit: null,
@@ -501,19 +511,18 @@ const Home = (props: HomeProps) => {
     const boxes = localStorage.getItem("boxes");
     if (boxes === null) {
       localStorage.setItem("boxes", JSON.stringify([defaultBox]));
-      return defaultBox;
+      return { index: 0, data: [defaultBox] };
     } else {
       const boxesJson = JSON.parse(boxes);
-      const myBox = boxesJson.find(
-        (x: { address: string }) => x.address === wallet?.publicKey.toString()
-      );
-      if (myBox) {
-        return myBox;
+      const myBox = findMyBoxIndex(boxesJson);
+      if (boxesJson[myBox]) {
+        return { index: myBox, data: boxesJson };
       } else {
         //Add box for new address
         boxesJson.push(defaultBox);
         localStorage.setItem("boxes", JSON.stringify(boxesJson));
-        return defaultBox;
+        const myBox = findMyBoxIndex(boxesJson);
+        return { index: myBox, data: boxesJson };
       }
     }
   }
@@ -527,13 +536,14 @@ const Home = (props: HomeProps) => {
           try {
             const uiAmount = await getWalletTreasureBalance(wallet);
             setBalance(uiAmount);
-            const myBox = getMyBox();
+            //const myBox = getMyBox();
+            //myBox.data[myBox.index].state
 
-            if (myBox.state === "created") {
+            if (boxState === "created") {
               //show starts of actual box
               console.log("Our mystery box...");
               await calculateMysteryProfit();
-            } else if (myBox.state === "opened") {
+            } else if (boxState === "opened") {
               //show starts of actual box
               console.log("Claim from mystery box...");
             } else {
