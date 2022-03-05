@@ -282,7 +282,7 @@ function MysteryBox(props: MysteryBoxProps) {
       setPowerupImage(boxes.data[boxes.index].awardToken.name + ".png");
     } else {
       boxes.data[boxes.index].awardToken = mysteryTokens[randomTokenIndex];
-      localStorage.setItem("boxes", JSON.stringify(boxes));
+      localStorage.setItem("boxes", JSON.stringify(boxes.data));
       setPowerupImage(mysteryTokens[randomTokenIndex].name + ".png");
     }
     changeVar("rgba(69,185,251,0.33)");

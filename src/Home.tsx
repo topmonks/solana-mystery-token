@@ -277,6 +277,7 @@ const Home = (props: HomeProps) => {
       }
       console.log("end");
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -302,6 +303,7 @@ const Home = (props: HomeProps) => {
       setMysteryLockedValue(amount);
       return await solendAction.sendTransactions(sendTransaction);
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -330,6 +332,7 @@ const Home = (props: HomeProps) => {
       }
       return result;
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -369,6 +372,7 @@ const Home = (props: HomeProps) => {
       console.log(`https://solscan.io/tx/${txid}`);
       return txid;
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -388,6 +392,7 @@ const Home = (props: HomeProps) => {
         changeBoxState("created");
       }
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -418,6 +423,7 @@ const Home = (props: HomeProps) => {
         return { mysteryProfit: 0, mysteryLockedValue };
       }
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -438,6 +444,7 @@ const Home = (props: HomeProps) => {
         }
       }
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -485,6 +492,7 @@ const Home = (props: HomeProps) => {
         return tokenAmount.uiAmount;
       }
     } catch (e) {
+      console.log(e);
       setAlertState({
         ...alertState,
         message: ERROR_MESSAGE,
@@ -499,6 +507,7 @@ const Home = (props: HomeProps) => {
   }
 
   function findMyBoxIndex(boxesJson: any) {
+    console.log(boxesJson);
     return boxesJson.findIndex(
       (x: { address: string }) => x.address === wallet?.publicKey.toString()
     );
@@ -512,9 +521,9 @@ const Home = (props: HomeProps) => {
     const defaultBox = {
       address: wallet?.publicKey?.toString(),
       state: "",
-      depositedBeforeCreate: null,
-      mysteryLockedValue: null,
-      mysteryProfit: null,
+      depositedBeforeCreate: 0,
+      mysteryLockedValue: 0,
+      mysteryProfit: 0,
       awardToken: null,
     };
     const boxes = localStorage.getItem("boxes");
@@ -548,6 +557,7 @@ const Home = (props: HomeProps) => {
             const boxes = getMyBox();
             const state = boxes.data[boxes.index].state;
             console.log("My saved state: " + state);
+            setMysteryValue(getMysteryProfit());
             setBoxState(state);
             if (state === "created") {
               //show starts of actual box
@@ -561,6 +571,7 @@ const Home = (props: HomeProps) => {
               console.log("No mystery box, create one!");
             }
           } catch (e) {
+            console.log(e);
             setAlertState({
               ...alertState,
               message: ERROR_MESSAGE,
@@ -582,6 +593,7 @@ const Home = (props: HomeProps) => {
           const uiAmount = await getWalletTreasureBalance(wallet);
           setBalance(uiAmount);
         } catch (e) {
+          console.log(e);
           setAlertState({
             ...alertState,
             message: ERROR_MESSAGE,
