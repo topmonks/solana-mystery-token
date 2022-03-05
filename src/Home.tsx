@@ -382,6 +382,7 @@ const Home = (props: HomeProps) => {
     localStorage.removeItem("depositedBeforeCreate");
     localStorage.removeItem("mysteryLockedValue");
     localStorage.removeItem("mysteryProfit");
+    localStorage.removeItem("awardToken");
     setBoxState(null);
   };
 

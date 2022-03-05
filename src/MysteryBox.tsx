@@ -202,7 +202,12 @@ const MysteryBoxContainer = styled.div`
   }
 `;
 
-const mysteryTokens = ["bnb.png", "btc.png", "eth.png", "hoge.png", "sol.png"];
+const mysteryTokens = [
+  { name: "hbb", address: "HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6" },
+  { name: "ivn", address: "iVNcrNE9BRZBC9Aqf753iZiZfbszeAVUoikgT9yvr2a" },
+  { name: "mnde", address: "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey" },
+  { name: "sonar", address: "sonarX4VtVkQemriJeLm6CKeW3GDMyiBnnAEMw1MRAE" },
+];
 
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
@@ -281,8 +286,17 @@ function MysteryBox(props: MysteryBoxProps) {
     document.documentElement.style.setProperty("--glow", glow);
   }
   function award() {
-    const randomTokenIndex = getRandomInt(mysteryTokens.length - 1);
-    setPowerupImage(mysteryTokens[randomTokenIndex]);
+    const randomTokenIndex = getRandomInt(mysteryTokens.length);
+    const awardToken = localStorage.getItem("awardToken");
+    if (typeof awardToken === "string") {
+      setPowerupImage(JSON.parse(awardToken).name + ".png");
+    } else {
+      localStorage.setItem(
+        "awardToken",
+        JSON.stringify(mysteryTokens[randomTokenIndex])
+      );
+      setPowerupImage(mysteryTokens[randomTokenIndex].name + ".png");
+    }
     changeVar("rgba(69,185,251,0.33)");
   }
 
