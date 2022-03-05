@@ -644,7 +644,11 @@ const Home = (props: HomeProps) => {
                 )}
                 {boxState === "" && (
                   <TextField
-                    style={{ width: "300px", margin: "auto" }}
+                    style={{
+                      width: "300px",
+                      margin: "auto",
+                      marginBottom: "20px",
+                    }}
                     id="outlined-basic"
                     label="Amount"
                     variant="outlined"
@@ -729,7 +733,12 @@ const Home = (props: HomeProps) => {
               </div>
             ) : (
               <CircularProgress
-                style={{ marginTop: "10px", width: "300px", height: "300px" }}
+                style={{
+                  margin: "auto",
+                  width: "200px",
+                  height: "200px",
+                  marginTop: "50px",
+                }}
               />
             )}
           </DesContainer>

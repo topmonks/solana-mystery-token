@@ -37,6 +37,7 @@ export const PlayButton = ({
   } else {
     return (
       <CTAButton
+        style={{ marginTop: "25px !important" }}
         onClick={async () => {
           try {
             setIsLoading(true);
