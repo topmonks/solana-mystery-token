@@ -198,6 +198,7 @@ const Home = (props: HomeProps) => {
   const [balance, setBalance] = useState<number>();
   const [response, setResponse] = useState("");
   const [mysteryValue, setMysteryValue] = useState(0);
+  const [mysteryInvestment, setMysteryInvestment] = useState(0);
   const [alertState, setAlertState] = useState<AlertState>({
     open: false,
     message: "",
@@ -406,6 +407,7 @@ const Home = (props: HomeProps) => {
   async function calculateMysteryProfit() {
     try {
       const mysteryLockedValue = getMysteryLockedValue();
+      setMysteryInvestment(mysteryLockedValue);
       console.log("mysteryLockedValue: " + mysteryLockedValue);
       const actualTreasureDeposit = await getSolendTreasureDeposit();
       console.log("actualTreasureDeposit: " + actualTreasureDeposit);
@@ -649,7 +651,8 @@ const Home = (props: HomeProps) => {
                 <MysteryBox boxState={boxState} getMyBox={getMyBox} />
                 {boxState === "created" && (
                   <p style={{ color: "#fe9110" }}>
-                    Mystery value: {mysteryValue} USDC
+                    Mystery [{mysteryInvestment} USDC][BOX] profit:{" "}
+                    {mysteryValue} USDC
                   </p>
                 )}
                 {boxState === "" && (
