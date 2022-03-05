@@ -349,12 +349,11 @@ const Home = (props: HomeProps) => {
         cluster: "mainnet-beta",
         user: publicKey as PublicKey,
       });
-
+      const boxes = getMyBox();
+      const outputAddress = boxes.data[boxes.index].awardToken.address;
       const routes = await jupiter.computeRoutes({
         inputMint: new PublicKey(treasure.address),
-        outputMint: new PublicKey(
-          "HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6"
-        ),
+        outputMint: new PublicKey(outputAddress),
         inputAmount: profitAmount * 1000000,
         slippage: 1,
         forceFetch: true,
