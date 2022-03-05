@@ -208,7 +208,7 @@ const Home = (props: HomeProps) => {
   const wallet = useAnchorWallet();
   const { publicKey, sendTransaction } = useWallet();
 
-  const [boxState, setBoxState] = useState("");
+  const [boxState, setBoxState] = useState("loading");
   const [amount, setAmount] = useState("");
   const [openCube, setOpenCube] = useState(() => {});
 
@@ -634,21 +634,25 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            <MysteryBox boxState={boxState} getMyBox={getMyBox} />
-            {boxState === "created" && (
-              <p style={{ color: "#fe9110" }}>
-                Mystery value: {mysteryValue} USDC
-              </p>
-            )}
-            {boxState === "" && (
-              <TextField
-                style={{ width: "300px", margin: "auto" }}
-                id="outlined-basic"
-                label="Amount"
-                variant="outlined"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
+            {boxState !== "loading" && (
+              <div>
+                <MysteryBox boxState={boxState} getMyBox={getMyBox} />
+                {boxState === "created" && (
+                  <p style={{ color: "#fe9110" }}>
+                    Mystery value: {mysteryValue} USDC
+                  </p>
+                )}
+                {boxState === "" && (
+                  <TextField
+                    style={{ width: "300px", margin: "auto" }}
+                    id="outlined-basic"
+                    label="Amount"
+                    variant="outlined"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                )}
+              </div>
             )}
             <PlayButtonContainer>
               {!wallet ? (
