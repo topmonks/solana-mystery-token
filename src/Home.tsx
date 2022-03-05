@@ -134,7 +134,6 @@ const MysteryContainer = styled.div`
   flex: 1 1 auto;
   flex-wrap: wrap;
   gap: 20px;
-  margin-top: 20px;
 `;
 
 const DesContainer = styled.div`
