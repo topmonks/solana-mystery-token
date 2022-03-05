@@ -197,7 +197,7 @@ const ERROR_MESSAGE = "Solana not responding";
 const Home = (props: HomeProps) => {
   const [balance, setBalance] = useState<number>();
   const [response, setResponse] = useState("");
-  const [mysteryValue, setMysteryValue] = useState(getMysteryProfit());
+  const [mysteryValue, setMysteryValue] = useState(0);
   const [alertState, setAlertState] = useState<AlertState>({
     open: false,
     message: "",
@@ -213,37 +213,45 @@ const Home = (props: HomeProps) => {
   const [openCube, setOpenCube] = useState(() => {});
 
   function setExistingSolendTreasureDeposit(amount: number) {
-    localStorage.setItem(
-      "depositedBeforeCreate",
-      (amount * 1000000).toString()
-    );
+    const boxes = getMyBox();
+    boxes.data[boxes.index].depositedBeforeCreate = (
+      amount * 1000000
+    ).toString();
+    setBoxes(boxes.data);
   }
 
   function getExistingSolendTreasureDeposit() {
-    const value = localStorage.getItem("depositedBeforeCreate");
+    const boxes = getMyBox();
+    const value = boxes.data[boxes.index].depositedBeforeCreate;
+
     return value
       ? setPrecision(parseFloat(value) / 1000000, treasure.decimals)
       : 0;
   }
 
   function setMysteryLockedValue(value: number) {
-    localStorage.setItem("mysteryLockedValue", (value * 1000000).toString());
-    console.log(localStorage.getItem("mysteryLockedValue"));
+    const boxes = getMyBox();
+    boxes.data[boxes.index].mysteryLockedValue = (value * 1000000).toString();
+    setBoxes(boxes.data);
   }
 
   function getMysteryLockedValue() {
-    const value = localStorage.getItem("mysteryLockedValue");
+    const boxes = getMyBox();
+    const value = boxes.data[boxes.index].mysteryLockedValue;
     return value
       ? setPrecision(parseFloat(value) / 1000000, treasure.decimals)
       : 0;
   }
 
   function setMysteryProfit(amount: number) {
-    localStorage.setItem("mysteryProfit", (amount * 1000000).toString());
+    const boxes = getMyBox();
+    boxes.data[boxes.index].mysteryLockedValue = (amount * 1000000).toString();
+    setBoxes(boxes.data);
   }
 
   function getMysteryProfit() {
-    const profit = localStorage.getItem("mysteryProfit");
+    const boxes = getMyBox();
+    const profit = boxes.data[boxes.index].mysteryProfit;
     return profit
       ? setPrecision(parseFloat(profit) / 1000000, treasure.decimals)
       : 0;
@@ -448,16 +456,16 @@ const Home = (props: HomeProps) => {
   }
 
   const resetBox = () => {
-    localStorage.removeItem("isBox");
-    localStorage.removeItem("depositedBeforeCreate");
-    localStorage.removeItem("mysteryLockedValue");
-    localStorage.removeItem("mysteryProfit");
-    localStorage.removeItem("awardToken");
+    const boxes = getMyBox();
+    boxes.data.splice(boxes.index, 1);
+    setBoxes(boxes.data);
     setBoxState("");
   };
 
   const changeBoxState = (state: string) => {
-    localStorage.setItem("isBox", state);
+    const boxes = getMyBox();
+    boxes.data[boxes.index].state = state;
+    setBoxes(boxes.data);
     setBoxState(state);
   };
 
@@ -503,6 +511,7 @@ const Home = (props: HomeProps) => {
   function getMyBox() {
     const defaultBox = {
       address: wallet?.publicKey?.toString(),
+      state: "",
       depositedBeforeCreate: null,
       mysteryLockedValue: null,
       mysteryProfit: null,
@@ -536,14 +545,15 @@ const Home = (props: HomeProps) => {
           try {
             const uiAmount = await getWalletTreasureBalance(wallet);
             setBalance(uiAmount);
-            //const myBox = getMyBox();
-            //myBox.data[myBox.index].state
-
-            if (boxState === "created") {
+            const boxes = getMyBox();
+            const state = boxes.data[boxes.index].state;
+            console.log("My saved state: " + state);
+            setBoxState(state);
+            if (state === "created") {
               //show starts of actual box
               console.log("Our mystery box...");
               await calculateMysteryProfit();
-            } else if (boxState === "opened") {
+            } else if (state === "opened") {
               //show starts of actual box
               console.log("Claim from mystery box...");
             } else {
@@ -635,20 +645,20 @@ const Home = (props: HomeProps) => {
                   <PlayButton
                     createMystery={async () => {
                       console.log("Creating...");
-                      // await createMystery();
+                      await createMystery();
                       changeBoxState("created");
                     }}
                     openMystery={async () => {
                       console.log("Opening...");
-                      // await openMystery();
+                      await openMystery();
                       changeBoxState("opened");
                     }}
                     claimMystery={async () => {
                       console.log("Claiming...");
-                      // const claimResult = await claimMysteryReward();
-                      // if (claimResult) {
-                      resetBox();
-                      // }
+                      const claimResult = await claimMysteryReward();
+                      if (claimResult) {
+                        resetBox();
+                      }
                     }}
                     boxState={boxState}
                     mysteryValue={mysteryValue}
