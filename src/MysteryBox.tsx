@@ -215,7 +215,6 @@ function getRandomInt(max: number) {
 
 export interface MysteryBoxProps {
   boxState: string | null;
-  setOpenCube: Function;
 }
 
 function MysteryBox(props: MysteryBoxProps) {

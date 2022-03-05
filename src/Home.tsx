@@ -192,6 +192,8 @@ export interface HomeProps {
   network: string;
 }
 
+const ERROR_MESSAGE = "Solana not responding";
+
 const Home = (props: HomeProps) => {
   const [balance, setBalance] = useState<number>();
   const [response, setResponse] = useState("");
@@ -247,126 +249,193 @@ const Home = (props: HomeProps) => {
   }
 
   async function getSolendTreasureDeposit() {
-    console.log("start get existing solend deposit");
-    const market = await SolendMarket.initialize(props.connection);
-    await market.loadReserves();
-    if (publicKey) {
-      const obligation = await market.fetchObligationByWallet(publicKey);
-      //USDC
-      const isDeposited = obligation?.deposits.find(
-        (reserve) => reserve.mintAddress === treasure.address
-      );
-      if (isDeposited) {
-        console.log(isDeposited.amount.toString());
-        return setPrecision(
-          parseFloat(isDeposited.amount.toString()) / 1000000,
-          treasure.decimals
+    try {
+      console.log("start get existing solend deposit");
+      const market = await SolendMarket.initialize(props.connection);
+      await market.loadReserves();
+      if (publicKey) {
+        const obligation = await market.fetchObligationByWallet(publicKey);
+        //USDC
+        const isDeposited = obligation?.deposits.find(
+          (reserve) => reserve.mintAddress === treasure.address
         );
+        if (isDeposited) {
+          console.log(isDeposited.amount.toString());
+          return setPrecision(
+            parseFloat(isDeposited.amount.toString()) / 1000000,
+            treasure.decimals
+          );
+        }
       }
+      console.log("end");
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
     }
-    console.log("end");
     return 0;
   }
 
   async function depositToSolend(amount: number) {
     console.log("start solend deposit");
 
-    const solendAction = await SolendAction.buildDepositTxns(
-      props.connection,
-      (amount * 1000000).toString(),
-      treasure.code,
-      publicKey as PublicKey,
-      "production"
-    );
-    console.log("end");
-    setMysteryLockedValue(amount);
-    return await solendAction.sendTransactions(sendTransaction);
+    try {
+      const solendAction = await SolendAction.buildDepositTxns(
+        props.connection,
+        (amount * 1000000).toString(),
+        treasure.code,
+        publicKey as PublicKey,
+        "production"
+      );
+      console.log("end");
+      setMysteryLockedValue(amount);
+      return await solendAction.sendTransactions(sendTransaction);
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
+    }
   }
 
   async function withdrawFromSolend(amount: number) {
     console.log("start solend withdraw");
     console.log(setPrecision(amount * 1000000, 0).toString());
 
-    const solendAction = await SolendAction.buildWithdrawTxns(
-      props.connection,
-      setPrecision(amount * 1000000, 0).toString(),
-      treasure.code,
-      publicKey as PublicKey,
-      "production"
-    );
-    const result = await solendAction.sendTransactions(sendTransaction);
-    if (result) {
-      console.log(result);
-      console.log("end");
+    try {
+      const solendAction = await SolendAction.buildWithdrawTxns(
+        props.connection,
+        setPrecision(amount * 1000000, 0).toString(),
+        treasure.code,
+        publicKey as PublicKey,
+        "production"
+      );
+      const result = await solendAction.sendTransactions(sendTransaction);
+      if (result) {
+        console.log(result);
+        console.log("end");
+      }
+      return result;
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
     }
-    return result;
   }
 
   async function claimMysteryReward() {
-    const profitAmount = getMysteryProfit();
-    console.log("Going to claim mystery for " + profitAmount.toString());
-    const jupiter = await Jupiter.load({
-      connection: props.connection,
-      cluster: "mainnet-beta",
-      user: publicKey as PublicKey,
-    });
+    try {
+      const profitAmount = getMysteryProfit();
+      console.log("Going to claim mystery for " + profitAmount.toString());
+      const jupiter = await Jupiter.load({
+        connection: props.connection,
+        cluster: "mainnet-beta",
+        user: publicKey as PublicKey,
+      });
 
-    const routes = await jupiter.computeRoutes({
-      inputMint: new PublicKey(treasure.address),
-      outputMint: new PublicKey("HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6"),
-      inputAmount: profitAmount * 1000000,
-      slippage: 1,
-      forceFetch: true,
-    });
-    console.log(routes);
-    // Prepare execute exchange
-    const { transactions } = await jupiter.exchange({
-      route: routes!.routesInfos[0],
-    });
-    const { setupTransaction, swapTransaction, cleanupTransaction } =
-      transactions;
-    const txid = await sendTransaction(swapTransaction, props.connection);
-    await props.connection.confirmTransaction(txid, "processed");
-    console.log(`https://solscan.io/tx/${txid}`);
-    return txid;
+      const routes = await jupiter.computeRoutes({
+        inputMint: new PublicKey(treasure.address),
+        outputMint: new PublicKey(
+          "HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6"
+        ),
+        inputAmount: profitAmount * 1000000,
+        slippage: 1,
+        forceFetch: true,
+      });
+      console.log(routes);
+      // Prepare execute exchange
+      const { transactions } = await jupiter.exchange({
+        route: routes!.routesInfos[0],
+      });
+      const { setupTransaction, swapTransaction, cleanupTransaction } =
+        transactions;
+      const txid = await sendTransaction(swapTransaction, props.connection);
+      await props.connection.confirmTransaction(txid, "processed");
+      console.log(`https://solscan.io/tx/${txid}`);
+      return txid;
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
+    }
   }
 
   async function createMystery() {
-    const existingDeposit = await getSolendTreasureDeposit();
-    setExistingSolendTreasureDeposit(existingDeposit);
-    const txnDeposit = await depositToSolend(parseFloat(amount));
-    if (txnDeposit) {
-      console.log(txnDeposit);
-      changeBoxState("created");
+    try {
+      const existingDeposit = await getSolendTreasureDeposit();
+      setExistingSolendTreasureDeposit(existingDeposit);
+      const txnDeposit = await depositToSolend(parseFloat(amount));
+      if (txnDeposit) {
+        console.log(txnDeposit);
+        changeBoxState("created");
+      }
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
     }
   }
 
   async function calculateMysteryProfit() {
-    const mysteryLockedValue = getMysteryLockedValue();
-    console.log("mysteryLockedValue: " + mysteryLockedValue);
-    const actualTreasureDeposit = await getSolendTreasureDeposit();
-    console.log("actualTreasureDeposit: " + actualTreasureDeposit);
-    if (actualTreasureDeposit > 0) {
-      const existingTreasureDeposit = getExistingSolendTreasureDeposit();
-      console.log("existingTreasureDeposit: " + existingTreasureDeposit);
-      const mysteryProfit = setPrecision(
-        actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue,
-        treasure.decimals
-      );
-      console.log("mysteryProfit: " + mysteryProfit);
-      setMysteryProfit(mysteryProfit);
-      setMysteryValue(mysteryProfit);
-      return { mysteryProfit, mysteryLockedValue };
-    } else {
-      return { mysteryProfit: 0, mysteryLockedValue };
+    try {
+      const mysteryLockedValue = getMysteryLockedValue();
+      console.log("mysteryLockedValue: " + mysteryLockedValue);
+      const actualTreasureDeposit = await getSolendTreasureDeposit();
+      console.log("actualTreasureDeposit: " + actualTreasureDeposit);
+      if (actualTreasureDeposit > 0) {
+        const existingTreasureDeposit = getExistingSolendTreasureDeposit();
+        console.log("existingTreasureDeposit: " + existingTreasureDeposit);
+        const mysteryProfit = setPrecision(
+          actualTreasureDeposit - existingTreasureDeposit - mysteryLockedValue,
+          treasure.decimals
+        );
+        console.log("mysteryProfit: " + mysteryProfit);
+        setMysteryProfit(mysteryProfit);
+        setMysteryValue(mysteryProfit);
+        return { mysteryProfit, mysteryLockedValue };
+      } else {
+        return { mysteryProfit: 0, mysteryLockedValue };
+      }
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
     }
   }
 
   async function openMystery() {
-    const data = await calculateMysteryProfit();
-    const valueToWithdraw = data.mysteryProfit + data.mysteryLockedValue;
-    await withdrawFromSolend(valueToWithdraw);
-    changeBoxState("opened");
+    try {
+      const data = await calculateMysteryProfit();
+      if (data) {
+        const valueToWithdraw = data.mysteryProfit + data.mysteryLockedValue;
+        await withdrawFromSolend(valueToWithdraw);
+        changeBoxState("opened");
+      }
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
+    }
   }
 
   function throwConfetti(): void {
@@ -392,17 +461,27 @@ const Home = (props: HomeProps) => {
   };
 
   async function getWalletTreasureBalance(wallet: any) {
-    const tokenAccounts = await props.connection.getParsedTokenAccountsByOwner(
-      wallet.publicKey,
-      { mint: new PublicKey(treasure.address) }
-    );
-    console.log("USDC account");
-    console.log(tokenAccounts);
-    if (tokenAccounts?.value.length > 0) {
-      const tokenAmount =
-        tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
-      console.log(tokenAmount);
-      return tokenAmount.uiAmount;
+    try {
+      const tokenAccounts =
+        await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
+          mint: new PublicKey(treasure.address),
+        });
+
+      console.log("USDC account");
+      console.log(tokenAccounts);
+      if (tokenAccounts?.value.length > 0) {
+        const tokenAmount =
+          tokenAccounts?.value[0].account.data.parsed.info.tokenAmount;
+        console.log(tokenAmount);
+        return tokenAmount.uiAmount;
+      }
+    } catch (e) {
+      setAlertState({
+        ...alertState,
+        message: ERROR_MESSAGE,
+        open: true,
+        severity: "error",
+      });
     }
   }
 
@@ -438,20 +517,29 @@ const Home = (props: HomeProps) => {
     if (wallet?.publicKey.toString() !== ref?.current?.publicKey.toString()) {
       if (wallet) {
         (async () => {
-          const uiAmount = await getWalletTreasureBalance(wallet);
-          setBalance(uiAmount);
-          const myBox = getMyBox();
+          try {
+            const uiAmount = await getWalletTreasureBalance(wallet);
+            setBalance(uiAmount);
+            const myBox = getMyBox();
 
-          if (myBox.state === "created") {
-            //show starts of actual box
-            console.log("Our mystery box...");
-            await calculateMysteryProfit();
-          } else if (myBox.state === "opened") {
-            //show starts of actual box
-            console.log("Claim from mystery box...");
-          } else {
-            //UI to crate new mystery box
-            console.log("No mystery box, create one!");
+            if (myBox.state === "created") {
+              //show starts of actual box
+              console.log("Our mystery box...");
+              await calculateMysteryProfit();
+            } else if (myBox.state === "opened") {
+              //show starts of actual box
+              console.log("Claim from mystery box...");
+            } else {
+              //UI to crate new mystery box
+              console.log("No mystery box, create one!");
+            }
+          } catch (e) {
+            setAlertState({
+              ...alertState,
+              message: ERROR_MESSAGE,
+              open: true,
+              severity: "error",
+            });
           }
         })();
       }
@@ -463,8 +551,17 @@ const Home = (props: HomeProps) => {
     (async () => {
       console.log("Let's go update balance!");
       if (wallet) {
-        const uiAmount = await getWalletTreasureBalance(wallet);
-        setBalance(uiAmount);
+        try {
+          const uiAmount = await getWalletTreasureBalance(wallet);
+          setBalance(uiAmount);
+        } catch (e) {
+          setAlertState({
+            ...alertState,
+            message: ERROR_MESSAGE,
+            open: true,
+            severity: "error",
+          });
+        }
       }
     })();
   }, [boxState]);
@@ -497,7 +594,7 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            <MysteryBox boxState={boxState} setOpenCube={setOpenCube} />
+            <MysteryBox boxState={boxState} />
             {boxState === "created" && (
               <p style={{ color: "#fe9110" }}>
                 Mystery value: {mysteryValue} USDC
@@ -561,11 +658,13 @@ const Home = (props: HomeProps) => {
         </MysteryContainer>
       </MainContainer>
       <Snackbar
+        style={{ bottom: "auto", top: "50px", width: "100%" }}
         open={alertState.open}
         autoHideDuration={6000}
         onClose={() => setAlertState({ ...alertState, open: false })}
       >
         <Alert
+          style={{ margin: "auto" }}
           onClose={() => setAlertState({ ...alertState, open: false })}
           severity={alertState.severity}
         >
