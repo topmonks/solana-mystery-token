@@ -9,7 +9,7 @@ import {
   useWallet,
 } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Snackbar } from "@mui/material";
+import { CircularProgress, Snackbar } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import { AlertState } from "./utils";
 import { SolendAction, SolendMarket } from "@solendprotocol/solend-sdk";
@@ -634,7 +634,7 @@ const Home = (props: HomeProps) => {
         <br />
         <MysteryContainer>
           <DesContainer>
-            {boxState !== "loading" && (
+            {boxState !== "loading" ? (
               <div>
                 <MysteryBox boxState={boxState} getMyBox={getMyBox} />
                 {boxState === "created" && (
@@ -652,81 +652,86 @@ const Home = (props: HomeProps) => {
                     onChange={(e) => setAmount(e.target.value)}
                   />
                 )}
-              </div>
-            )}
-            <PlayButtonContainer>
-              {!wallet ? (
-                <ConnectButton>Connect Wallet</ConnectButton>
-              ) : (
-                <div>
-                  <PlayButton
-                    createMystery={async () => {
-                      try {
-                        console.log("Creating...");
-                        await createMystery();
-                        changeBoxState("created");
-                      } catch (e) {
-                        console.log(e);
-                        setAlertState({
-                          ...alertState,
-                          message: ERROR_MESSAGE,
-                          open: true,
-                          severity: "error",
-                        });
-                      }
-                    }}
-                    openMystery={async () => {
-                      try {
-                        console.log("Opening...");
-                        await openMystery();
-                      } catch (e) {
-                        console.log(e);
-                        setAlertState({
-                          ...alertState,
-                          message: ERROR_MESSAGE,
-                          open: true,
-                          severity: "error",
-                        });
-                      }
-                    }}
-                    claimMystery={async () => {
-                      try {
-                        console.log("Claiming...");
-                        const claimResult = await claimMysteryReward();
-                        if (claimResult) {
-                          resetBox();
-                        }
-                      } catch (e) {
-                        console.log(e);
-                        setAlertState({
-                          ...alertState,
-                          message: ERROR_MESSAGE,
-                          open: true,
-                          severity: "error",
-                        });
-                      }
-                    }}
-                    boxState={boxState}
-                    mysteryValue={mysteryValue}
-                  />
-                  {boxState === "opened" && (
-                    <RefuseTokenLink
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want destroy Mystery token?"
-                          )
-                        ) {
-                          destroyMysteryToken();
-                        }
-                      }}
-                    >
-                      Destroy MYSTERY TOKEN and keep profit {mysteryValue} USDC
-                    </RefuseTokenLink>
+                <PlayButtonContainer>
+                  {!wallet ? (
+                    <ConnectButton>Connect Wallet</ConnectButton>
+                  ) : (
+                    <div>
+                      <PlayButton
+                        createMystery={async () => {
+                          try {
+                            console.log("Creating...");
+                            await createMystery();
+                            changeBoxState("created");
+                          } catch (e) {
+                            console.log(e);
+                            setAlertState({
+                              ...alertState,
+                              message: ERROR_MESSAGE,
+                              open: true,
+                              severity: "error",
+                            });
+                          }
+                        }}
+                        openMystery={async () => {
+                          try {
+                            console.log("Opening...");
+                            await openMystery();
+                          } catch (e) {
+                            console.log(e);
+                            setAlertState({
+                              ...alertState,
+                              message: ERROR_MESSAGE,
+                              open: true,
+                              severity: "error",
+                            });
+                          }
+                        }}
+                        claimMystery={async () => {
+                          try {
+                            console.log("Claiming...");
+                            const claimResult = await claimMysteryReward();
+                            if (claimResult) {
+                              resetBox();
+                            }
+                          } catch (e) {
+                            console.log(e);
+                            setAlertState({
+                              ...alertState,
+                              message: ERROR_MESSAGE,
+                              open: true,
+                              severity: "error",
+                            });
+                          }
+                        }}
+                        boxState={boxState}
+                        mysteryValue={mysteryValue}
+                      />
+                      {boxState === "opened" && (
+                        <RefuseTokenLink
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want destroy Mystery token?"
+                              )
+                            ) {
+                              destroyMysteryToken();
+                            }
+                          }}
+                        >
+                          Destroy MYSTERY TOKEN and keep profit {mysteryValue}{" "}
+                          USDC
+                        </RefuseTokenLink>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-            </PlayButtonContainer>
+                </PlayButtonContainer>
+              </div>
+            ) : (
+              <CircularProgress
+                style={{ marginTop: "10px", width: "300px", height: "300px" }}
+              />
+            )}
           </DesContainer>
         </MysteryContainer>
       </MainContainer>
