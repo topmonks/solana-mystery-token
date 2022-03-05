@@ -36,7 +36,10 @@ export const PlayButton = ({
         }
       }}
       variant="contained"
-      disabled={boxState === "created" && mysteryValue < 0.001}
+      disabled={
+        (boxState === "created" || boxState === "opened") &&
+        mysteryValue < 0.001
+      }
     >
       {boxState === "created"
         ? "OPEN"

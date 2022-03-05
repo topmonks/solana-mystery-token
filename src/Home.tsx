@@ -195,7 +195,7 @@ export interface HomeProps {
 const Home = (props: HomeProps) => {
   const [balance, setBalance] = useState<number>();
   const [response, setResponse] = useState("");
-  const [mysteryValue, setMysteryValue] = useState(0);
+  const [mysteryValue, setMysteryValue] = useState(getMysteryProfit());
   const [alertState, setAlertState] = useState<AlertState>({
     open: false,
     message: "",
@@ -235,7 +235,7 @@ const Home = (props: HomeProps) => {
   }
 
   function setMysteryProfit(amount: number) {
-    localStorage.setItem("mysteryProfit", (amount * 100000).toString());
+    localStorage.setItem("mysteryProfit", (amount * 1000000).toString());
   }
 
   function getMysteryProfit() {
@@ -404,8 +404,8 @@ const Home = (props: HomeProps) => {
     }
   }
 
-  function refuseMysteryToken() {
-    //
+  function destroyMysteryToken() {
+    resetBox();
   }
 
   const ref: { current: AnchorWallet | undefined } = useRef();
@@ -474,7 +474,7 @@ const Home = (props: HomeProps) => {
             <MysteryBox boxState={boxState} />
             {boxState === "created" && (
               <p style={{ color: "#fe9110" }}>
-                {mysteryValue} USDC are doing magic
+                Mystery value: {mysteryValue} USDC
               </p>
             )}
             {boxState === null && (
@@ -514,8 +514,18 @@ const Home = (props: HomeProps) => {
                     mysteryValue={mysteryValue}
                   />
                   {boxState === "opened" && (
-                    <RefuseTokenLink onClick={refuseMysteryToken}>
-                      Refuse mystery token
+                    <RefuseTokenLink
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want destroy Mystery token?"
+                          )
+                        ) {
+                          destroyMysteryToken();
+                        }
+                      }}
+                    >
+                      Destroy MYSTERY TOKEN and keep profit {mysteryValue} USDC
                     </RefuseTokenLink>
                   )}
                 </div>
