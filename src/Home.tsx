@@ -134,6 +134,7 @@ const MysteryContainer = styled.div`
   flex: 1 1 auto;
   flex-wrap: wrap;
   gap: 20px;
+  margin-top: -20px;
 `;
 
 const DesContainer = styled.div`
@@ -656,19 +657,49 @@ const Home = (props: HomeProps) => {
                 <div>
                   <PlayButton
                     createMystery={async () => {
-                      console.log("Creating...");
-                      await createMystery();
-                      changeBoxState("created");
+                      try {
+                        console.log("Creating...");
+                        await createMystery();
+                        changeBoxState("created");
+                      } catch (e) {
+                        console.log(e);
+                        setAlertState({
+                          ...alertState,
+                          message: ERROR_MESSAGE,
+                          open: true,
+                          severity: "error",
+                        });
+                      }
                     }}
                     openMystery={async () => {
-                      console.log("Opening...");
-                      await openMystery();
+                      try {
+                        console.log("Opening...");
+                        await openMystery();
+                      } catch (e) {
+                        console.log(e);
+                        setAlertState({
+                          ...alertState,
+                          message: ERROR_MESSAGE,
+                          open: true,
+                          severity: "error",
+                        });
+                      }
                     }}
                     claimMystery={async () => {
-                      console.log("Claiming...");
-                      const claimResult = await claimMysteryReward();
-                      if (claimResult) {
-                        resetBox();
+                      try {
+                        console.log("Claiming...");
+                        const claimResult = await claimMysteryReward();
+                        if (claimResult) {
+                          resetBox();
+                        }
+                      } catch (e) {
+                        console.log(e);
+                        setAlertState({
+                          ...alertState,
+                          message: ERROR_MESSAGE,
+                          open: true,
+                          severity: "error",
+                        });
                       }
                     }}
                     boxState={boxState}
