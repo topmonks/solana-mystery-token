@@ -292,7 +292,6 @@ function MysteryBox(props: MysteryBoxProps) {
   return (
     <MysteryBoxContainer>
       <div
-        onClick={() => openCube()}
         className={`m-auto bg-black h-screen w-screen flex justify-center items-center ${cubeState}`}
       >
         <div

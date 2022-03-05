@@ -36,13 +36,13 @@ const WalletContainer = styled.div`
 `;
 
 const WalletAmount = styled.div`
-  color: black;
+  color: white;
   width: auto;
   padding: 5px 5px 5px 16px;
   min-width: 48px;
   min-height: auto;
   border-radius: 22px;
-  background-color: white;
+  background-color: #404144;
   box-shadow: 0px 3px 5px -1px rgb(0 0 0 / 20%),
     0px 6px 10px 0px rgb(0 0 0 / 14%), 0px 1px 18px 0px rgb(0 0 0 / 12%);
   box-sizing: border-box;
@@ -593,7 +593,7 @@ const Home = (props: HomeProps) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img alt="" src="logo.png" />
+              <img alt="" src="logo.png" style={{ height: "100px" }} />
             </a>
           </Logo>
           <Menu />
