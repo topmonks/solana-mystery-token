@@ -38,16 +38,20 @@ export const PlayButton = ({
     return (
       <CTAButton
         onClick={async () => {
-          setIsLoading(true);
+          try {
+            setIsLoading(true);
 
-          if (!boxState) {
-            await createMystery();
-          } else if (boxState === "created") {
-            await openMystery();
-          } else if (boxState === "opened") {
-            await claimMystery();
+            if (!boxState) {
+              await createMystery();
+            } else if (boxState === "created") {
+              await openMystery();
+            } else if (boxState === "opened") {
+              await claimMystery();
+            }
+            setIsLoading(false);
+          } catch (e) {
+            console.log(e);
           }
-          setIsLoading(false);
         }}
         variant="contained"
         disabled={
