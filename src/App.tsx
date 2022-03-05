@@ -25,7 +25,6 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
 import "./App.css";
 import Home from "./Home";
-import { dark } from "@mui/material/styles/createPalette";
 import { amber, deepOrange, grey } from "@mui/material/colors";
 
 require("@solana/wallet-adapter-react-ui/styles.css");

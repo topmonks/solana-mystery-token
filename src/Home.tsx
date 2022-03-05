@@ -514,9 +514,6 @@ const Home = (props: HomeProps) => {
                     }}
                     boxState={boxState}
                     mysteryValue={mysteryValue}
-                    openCube={() => {
-                      openCube();
-                    }}
                   />
                   {boxState === "opened" && (
                     <RefuseTokenLink

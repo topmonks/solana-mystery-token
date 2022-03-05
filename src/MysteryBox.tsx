@@ -231,56 +231,46 @@ function MysteryBox(props: MysteryBoxProps) {
   const [glowStyle, setGlowStyle] = useState({});
   const [cubeStyle, setCubeStyle] = useState({});
 
-  let c = 0;
-  console.log(cubeState);
+  function openCube() {
+    award();
+    setTopStyle({
+      transform: "translateY(-10rem)",
+      opacity: 0.1,
+    });
+    setLeftStyle({ transform: "translateX(-10rem)", opacity: 0.1 });
+    setRightStyle({ transform: "translateX(10rem)", opacity: 0.1 });
+    setBackStyle({ opacity: 0.1 });
+    setGlowStyle({ opacity: 0.5 });
+    setPowerupStyle({
+      opacity: 1,
+      zIndex: 10,
+      height: "300px",
+      width: "300px",
+    });
+    setCubeState("opened");
+    setCubeStyle({ animationPlayState: "paused" });
+  }
 
-  useEffect(
-    () => setCubeState(props.boxState === null ? "start" : props.boxState),
-    [props.boxState]
-  );
+  function closeCube() {
+    setTopStyle({ transform: "translateY(0)", opacity: 1 });
+    setLeftStyle({ transform: "translateX(0)", opacity: 1 });
+    setRightStyle({ transform: "translateX(0)", opacity: 1 });
+    setCubeStyle({ opacity: 1, animationPlayState: "running" });
+    setBackStyle({ opacity: 1 });
+    setGlowStyle({ opacity: 1 });
+    setPowerupStyle({ opacity: 0, zIndex: 0, height: "100px", width: "100px" });
+    changeVar("rgba(255,195,26,0.4)");
+  }
 
   useEffect(() => {
-    props.setOpenCube(openCube);
-  }, [props.setOpenCube]);
+    setCubeState(props.boxState === null ? "start" : props.boxState);
 
-  function openCube() {
-    if (cubeState !== "opened") {
-      award();
-      setTopStyle({
-        transform: "translateY(-3rem)",
-        opacity: 0.1,
-      });
-      setLeftStyle({ transform: "translateX(-3rem)", opacity: 0.1 });
-      setRightStyle({ transform: "translateX(3rem)", opacity: 0.1 });
-      setBackStyle({ opacity: 0.1 });
-      setGlowStyle({ opacity: 0.5 });
-      setPowerupStyle({
-        opacity: 1,
-        zIndex: 10,
-        height: "300px",
-        width: "300px",
-      });
-      setCubeState("opened");
-      setCubeStyle({ animationPlayState: "paused" });
-    } else {
-      // ctop.style.transform = "translateY(0)";
-      // cleft.style.transform = "translateX(0)";
-      // cright.style.transform = "translateX(0)";
-      // cube.style.opacity = 1;
-      // this.isOpen = false;
-      // ctop.style.opacity = 1;
-      // cleft.style.opacity = 1;
-      // cright.style.opacity = 1;
-      // cback.style.opacity = 1;
-      // glow.style.opacity = 1;
-      // powerup.style.opacity = 0;
-      // powerup.style.zIndex = 0;
-      // cube.style.animationPlayState = "running";
-      // powerup.style.height = "48px";
-      // powerup.style.width = "48px";
-      // changeVar("rgba(255,195,26,0.4)");
+    if (props.boxState === "opened") {
+      openCube();
+    } else if (props.boxState === null) {
+      closeCube();
     }
-  }
+  }, [props.boxState]);
 
   function changeVar(glow: string) {
     document.documentElement.style.setProperty("--glow", glow);

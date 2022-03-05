@@ -17,14 +17,12 @@ export const PlayButton = ({
   claimMystery,
   boxState,
   mysteryValue,
-  openCube,
 }: {
   createMystery: () => Promise<void>;
   openMystery: () => Promise<void>;
   claimMystery: () => Promise<void>;
   boxState: string | null;
   mysteryValue: number;
-  openCube: () => {};
 }) => {
   return (
     <CTAButton
@@ -33,7 +31,6 @@ export const PlayButton = ({
           await createMystery();
         } else if (boxState === "created") {
           await openMystery();
-          openCube();
         } else if (boxState === "opened") {
           await claimMystery();
         }
