@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import Button from "@mui/material/Button";
+import { useState } from "react";
+import { CircularProgress } from "@mui/material";
 
 export const CTAButton = styled(Button)`
   display: block !important;
@@ -24,28 +26,46 @@ export const PlayButton = ({
   boxState: string | null;
   mysteryValue: number;
 }) => {
-  return (
-    <CTAButton
-      onClick={async () => {
-        if (!boxState) {
-          await createMystery();
-        } else if (boxState === "created") {
-          await openMystery();
-        } else if (boxState === "opened") {
-          await claimMystery();
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (isLoading) {
+    return (
+      <CircularProgress
+        style={{ marginTop: "10px", width: "60px", height: "60px" }}
+      />
+    );
+  } else {
+    return (
+      <CTAButton
+        onClick={async () => {
+          if (!boxState) {
+            setIsLoading(true);
+            setTimeout(async () => {
+              await createMystery();
+              setIsLoading(false);
+            }, 3000);
+          } else if (boxState === "created") {
+            setIsLoading(true);
+            await openMystery();
+            setIsLoading(false);
+          } else if (boxState === "opened") {
+            setIsLoading(true);
+            await claimMystery();
+            setIsLoading(false);
+          }
+        }}
+        variant="contained"
+        disabled={
+          (boxState === "created" || boxState === "opened") &&
+          mysteryValue < 0.001
         }
-      }}
-      variant="contained"
-      disabled={
-        (boxState === "created" || boxState === "opened") &&
-        mysteryValue < 0.001
-      }
-    >
-      {boxState === "created"
-        ? "OPEN"
-        : boxState === "opened"
-        ? "CLAIM"
-        : "CREATE"}
-    </CTAButton>
-  );
+      >
+        {boxState === "created"
+          ? "OPEN"
+          : boxState === "opened"
+          ? "CLAIM"
+          : "CREATE"}
+      </CTAButton>
+    );
+  }
 };
