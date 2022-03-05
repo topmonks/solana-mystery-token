@@ -40,10 +40,8 @@ export const PlayButton = ({
         onClick={async () => {
           if (!boxState) {
             setIsLoading(true);
-            setTimeout(async () => {
-              await createMystery();
-              setIsLoading(false);
-            }, 3000);
+            await createMystery();
+            setIsLoading(false);
           } else if (boxState === "created") {
             setIsLoading(true);
             await openMystery();
