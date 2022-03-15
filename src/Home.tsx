@@ -624,11 +624,13 @@ const Home = (props: HomeProps) => {
               alt=""
               src="logo_solend.png"
               style={{ height: "100px", marginLeft: "25px" }}
+              onClick={() => changeBoxState("opened")}
             />
             <img
               alt=""
               src="logo_jupiter.svg"
               style={{ height: "100px", marginLeft: "25px" }}
+              onClick={() => changeBoxState("opened")}
             />
           </Logo>
           <Menu />
