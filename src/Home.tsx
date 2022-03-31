@@ -365,7 +365,7 @@ const Home = (props: HomeProps) => {
       console.log(routes);
       // Prepare execute exchange
       const { transactions } = await jupiter.exchange({
-        route: routes!.routesInfos[0],
+        routeInfo: routes!.routesInfos[0],
       });
       const { setupTransaction, swapTransaction, cleanupTransaction } =
         transactions;
